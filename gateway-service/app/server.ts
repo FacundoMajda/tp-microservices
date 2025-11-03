@@ -33,6 +33,7 @@ app.get('/health', async (_req, res) => {
       { name: 'auth', url: 'http://auth:3001/health' },
       { name: 'user', url: 'http://user:3002/health' },
       { name: 'product', url: 'http://product:3003/health' },
+      { name: 'order', url: 'http://order:3004/health' },
     ];
 
     Logger.info('---------Starting health checks for all services---------');

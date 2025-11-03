@@ -17,4 +17,20 @@ export const setupProxyMiddlewares = (app: Application): void => {
       changeOrigin: true,
     }),
   );
+
+  app.use(
+    '/products',
+    createProxyMiddleware({
+      target: `${process.env.PRODUCT_SERVICE_URL || 'http://localhost'}:${process.env.PRODUCT_SERVICE_PORT || '3003'}`,
+      changeOrigin: true,
+    }),
+  );
+
+  app.use(
+    '/orders',
+    createProxyMiddleware({
+      target: `${process.env.ORDER_SERVICE_URL || 'http://localhost'}:${process.env.ORDER_SERVICE_PORT || '3004'}`,
+      changeOrigin: true,
+    }),
+  );
 };
