@@ -65,7 +65,7 @@ export class User extends Model<UserAttributes, UserCreateAttributes> {
       {
         sequelize,
         modelName: 'User',
-        paranoid: true, // Para soft deletes con deletedAt
+        paranoid: true,
       },
     );
   }

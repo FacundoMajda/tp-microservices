@@ -1,41 +1,40 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import 'dotenv/config';
 
 import { initializeDatabase, initializeModels } from '../config';
+import { Logger } from '../utils/logger';
+import { loggingMiddleware, notFoundMiddleware, errorMiddleware } from '../middlewares';
+import { setupHealthCheck } from '../utils/health';
 
 const app = express();
 const port = process.env.USER_SERVICE_PORT || 3002;
 
-// Middleware
+app.use(loggingMiddleware);
 app.use(cors());
 app.use(helmet());
-app.use(morgan('combined'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Database connection and models
-initializeDatabase();
-initializeModels();
+try {
+  initializeDatabase();
+  initializeModels();
+  Logger.dbConnection('success');
+} catch (error) {
+  Logger.dbConnection('error', error);
+}
 
-// Routes
 app.get('/', (_req, res) => {
   res.send('User Service Status: OK');
 });
 
-// 404 handler
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not Found' });
-});
+app.get('/health', setupHealthCheck('User Service'));
 
-// Error handler
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
+// Middlewares de error
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
 
 app.listen(port, () => {
-  console.log(`User Service is running on port ${port}`);
+  Logger.serverStart(Number(port));
 });
