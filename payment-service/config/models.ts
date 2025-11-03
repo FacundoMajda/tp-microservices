@@ -1,6 +1,6 @@
 import { sequelize } from './db.config';
-import { Order } from '../models/order.model';
+import { Payment } from '../models/payment.model';
 
 export const initializeModels = () => {
-  Order.initModel(sequelize);
+  Payment.initModel(sequelize);
 };

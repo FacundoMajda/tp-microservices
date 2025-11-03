@@ -1,1 +1,1 @@
-# order-service
+# payment-service

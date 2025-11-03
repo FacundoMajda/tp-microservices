@@ -6,10 +6,10 @@ import 'dotenv/config';
 import { initializeDatabase, initializeModels } from '../config';
 import { loggingMiddleware, notFoundMiddleware, errorMiddleware } from '../middlewares';
 import { setupHealthCheck } from '../utils/health';
-import orderRoutes from '../routes/order.routes';
+import paymentRoutes from '../routes/payment.routes';
 
 const app = express();
-const port = process.env.ORDER_SERVICE_PORT || 3004;
+const port = process.env.PAYMENT_SERVICE_PORT || 3005;
 
 app.use(loggingMiddleware);
 app.use(cors());
@@ -20,22 +20,22 @@ app.use(express.json());
 try {
   initializeDatabase();
   initializeModels();
-  console.log('Order Service DB initialized');
+  console.log('Payment Service DB initialized');
 } catch (error) {
-  console.log('Order Service DB init failed', error);
+  console.log('Payment Service DB init failed', error);
 }
 
 app.get('/', (_req, res) => {
-  res.send('Order Service Status: OK');
+  res.send('Payment Service Status: OK');
 });
 
-app.use('/orders', orderRoutes);
+app.use('/payments', paymentRoutes);
 
-app.get('/health', setupHealthCheck('Order Service'));
+app.get('/health', setupHealthCheck('Payment Service'));
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 app.listen(port, () => {
-  console.log(`Order Service running on port ${port}`);
+  console.log(`Payment Service running on port ${port}`);
 });

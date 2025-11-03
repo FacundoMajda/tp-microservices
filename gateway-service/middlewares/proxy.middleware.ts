@@ -33,4 +33,12 @@ export const setupProxyMiddlewares = (app: Application): void => {
       changeOrigin: true,
     }),
   );
+
+  app.use(
+    '/payments',
+    createProxyMiddleware({
+      target: `${process.env.PAYMENT_SERVICE_URL || 'http://localhost'}:${process.env.PAYMENT_SERVICE_PORT || '3005'}`,
+      changeOrigin: true,
+    }),
+  );
 };
