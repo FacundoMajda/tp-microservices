@@ -27,7 +27,8 @@ app.get('/', (_req, res) => {
   res.send('Gateway Service Status: OK');
 });
 
-app.get('/health', async (_req, res) => {
+app.get('/health', async (req, res) => {
+  const startTime = Date.now();
   try {
     const services = [
       { name: 'auth', url: 'http://auth:3001/health' },
@@ -37,28 +38,33 @@ app.get('/health', async (_req, res) => {
       { name: 'payment', url: 'http://payment:3005/health' },
     ];
 
-    Logger.info('---------Starting health checks for all services---------');
+    Logger.info('Starting health checks for all services');
 
     const results = await Promise.all(
       services.map(async (service) => {
+        const serviceStart = Date.now();
         try {
-          Logger.info(`Health checking ${service.name} at ${service.url}`);
           const response = await fetch(service.url);
+          const latency = Date.now() - serviceStart;
           const status = response.ok ? 'healthy' : 'unhealthy';
-          Logger.info(`${service.name} health: ${status}`);
-          return { service: service.name, status };
+          return { name: service.name, status, latency };
         } catch (error) {
-          Logger.error(`${service.name} health check failed: ${String(error)}`);
-          return { service: service.name, status: 'unhealthy', error: String(error) };
+          const latency = Date.now() - serviceStart;
+          return { name: service.name, status: 'unhealthy', latency, error: String(error) };
         }
       }),
     );
 
+    const duration = Date.now() - startTime;
     const allHealthy = results.every((r) => r.status === 'healthy');
-    Logger.info(`---------Overall health: ${allHealthy ? 'healthy' : 'unhealthy'}---------`);
-    res.status(allHealthy ? 200 : 503).json({ status: allHealthy ? 'healthy' : 'unhealthy', services: results });
+    const overall = allHealthy ? 'healthy' : 'unhealthy';
+
+    Logger.healthCheckSummary(results, overall, `${req.method} ${req.url}`, req.ip || 'unknown', duration);
+
+    res.status(allHealthy ? 200 : 503).json({ status: overall, services: results });
   } catch (error) {
-    Logger.error(`Health check error: ${String(error)}`);
+    const duration = Date.now() - startTime;
+    Logger.error('Health check error', { error: String(error), duration: `${duration}ms` });
     res.status(503).json({ status: 'unhealthy', error: String(error) });
   }
 });

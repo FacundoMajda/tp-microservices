@@ -6,7 +6,7 @@
 echo "Starting reset process..."
 
 # Lista de servicios
-services=("auth-service" "gateway-service" "user-service")
+services=("auth-service" "gateway-service" "user-service" "product-service" "order-service" "payment-service")
 
 # Paso 1: Borrar node_modules y archivos de lock en cada servicio
 for service in "${services[@]}"; do
@@ -26,8 +26,8 @@ for service in "${services[@]}"; do
     echo "Installing dependencies in $service..."
     if [ -d "$service" ]; then
         cd "$service"
+        npm install --save-dev @types/node
         npm install
-        npm install morgan @types/morgan
         cd ..
         echo "Dependencies installed in $service successfully."
     else
