@@ -1,5 +1,5 @@
 import { CreationOptional, DataTypes, Model } from '@sequelize/core';
-import { UserAccountType, UserAttributes, UserCreateAttributes } from '../interfaces/User';
+import { UserAttributes, UserCreateAttributes } from '../interfaces/User';
 import { capitalizeFirstLetter } from '../utils';
 
 export class User extends Model<UserAttributes, UserCreateAttributes> {
@@ -8,9 +8,9 @@ export class User extends Model<UserAttributes, UserCreateAttributes> {
   declare lastName: string;
   declare email: string;
   declare password: string;
-  declare accountType: UserAccountType;
+  declare role: string; // 'admin' or 'user'
   declare primaryPhone: string | null;
-  declare secondaryPhone: string | null;
+  declare preferences: Record<string, any> | null;
   declare deletedAt: Date | null;
 
   getFullName(): string {
@@ -45,16 +45,17 @@ export class User extends Model<UserAttributes, UserCreateAttributes> {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        accountType: {
-          type: DataTypes.ENUM('customer', 'admin'),
+        role: {
+          type: DataTypes.STRING,
           allowNull: false,
+          defaultValue: 'user',
         },
         primaryPhone: {
           type: DataTypes.STRING,
           allowNull: true,
         },
-        secondaryPhone: {
-          type: DataTypes.STRING,
+        preferences: {
+          type: DataTypes.JSON,
           allowNull: true,
         },
         deletedAt: {

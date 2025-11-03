@@ -7,6 +7,7 @@ import { initializeDatabase, initializeModels } from '../config';
 import { Logger } from '../utils/logger';
 import { loggingMiddleware, notFoundMiddleware, errorMiddleware } from '../middlewares';
 import { setupHealthCheck } from '../utils/health';
+import userRoutes from '../routes/user.routes';
 
 const app = express();
 const port = process.env.USER_SERVICE_PORT || 3002;
@@ -28,6 +29,8 @@ try {
 app.get('/', (_req, res) => {
   res.send('User Service Status: OK');
 });
+
+app.use('/users', userRoutes);
 
 app.get('/health', setupHealthCheck('User Service'));
 
