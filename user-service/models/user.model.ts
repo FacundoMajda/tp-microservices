@@ -46,7 +46,7 @@ export class User extends Model<UserAttributes, UserCreateAttributes> {
           allowNull: false,
         },
         accountType: {
-          type: DataTypes.ENUM('seller', 'buyer', 'admin'),
+          type: DataTypes.ENUM('customer', 'admin'),
           allowNull: false,
         },
         primaryPhone: {

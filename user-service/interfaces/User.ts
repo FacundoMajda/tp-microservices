@@ -1,8 +1,7 @@
 import type { PartialBy } from '@sequelize/utils';
 
 export enum UserAccountType {
-  SELLER = 'seller',
-  BUYER = 'buyer',
+  CUSTOMER = 'customer',
   ADMIN = 'admin',
 }
 
