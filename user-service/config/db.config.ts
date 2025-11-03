@@ -14,6 +14,7 @@ export const sequelize = new Sequelize({
 export const initializeDatabase = async () => {
   try {
     await sequelize.authenticate();
+    await sequelize.sync({ force: JSON.parse(process.env.FORCE_SYNC || 'false') });
     console.log('User Service connection to DB success!');
   } catch (error) {
     console.log('User Service connection to DB failed!', error);

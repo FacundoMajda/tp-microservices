@@ -16,6 +16,11 @@ services:
       - .env
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Auth service
   auth:
@@ -34,6 +39,11 @@ services:
       - .env
     depends_on:
       - db
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
 
   # User service
   user:
@@ -52,6 +62,35 @@ services:
       - .env
     depends_on:
       - db
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
+
+  # Product service
+  product:
+    image: node:20.4.0
+    container_name: example-product
+    restart: unless-stopped
+    command: npm run start:dev
+    working_dir: /app
+    networks:
+      - example-network
+    ports:
+      - 3003:3000
+    volumes:
+      - ./product-service:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
 
   # Database service
   db:

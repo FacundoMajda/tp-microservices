@@ -15,8 +15,8 @@ export const initializeDatabase = async () => {
   try {
     await sequelize.authenticate();
     await sequelize.sync({ force: JSON.parse(process.env.FORCE_SYNC || 'false') });
-    console.log('Auth Service connection to DB success!');
+    console.log('Product Service connection to DB success!');
   } catch (error) {
-    console.log('Auth Service connection to DB failed!', error);
+    console.log('Product Service connection to DB failed!', error);
   }
 };
