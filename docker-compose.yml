@@ -1,0 +1,85 @@
+services:
+  # Gateway service
+  gateway:
+    image: node:20.4.0
+    container_name: example-gateway
+    restart: unless-stopped
+    command: npm run start:dev
+    working_dir: /app
+    networks:
+      - example-network
+    ports:
+      - 3000:3000
+    volumes:
+      - ./gateway-service:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  # Auth service
+  auth:
+    image: node:20.4.0
+    container_name: example-auth
+    restart: unless-stopped
+    command: npm run start:dev
+    working_dir: /app
+    networks:
+      - example-network
+    ports:
+      - 3001:3000
+    volumes:
+      - ./auth-service:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  # User service
+  user:
+    image: node:20.4.0
+    container_name: example-user
+    restart: unless-stopped
+    command: npm run start:dev
+    working_dir: /app
+    networks:
+      - example-network
+    ports:
+      - 3002:3000
+    volumes:
+      - ./user-service:/app
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  # Database service
+  db:
+    image: mysql:8.3.0
+    container_name: example-user-db
+    restart: unless-stopped
+    networks:
+      - example-network
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
+    volumes:
+      - db-volume:/var/lib/mysql
+      - ./:/docker-entrypoint-initdb.d:ro
+
+networks:
+  example-network:
+    driver: bridge
+
+volumes:
+  db-volume: # Persist data for the database
