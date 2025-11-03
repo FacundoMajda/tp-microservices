@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { initializeDatabase } from '../config';
 import { errorMiddleware, loggingMiddleware, notFoundMiddleware, setupProxyMiddlewares } from '../middlewares';
 import { Logger } from '../utils/logger';
+import { setupHealthCheck } from '../utils/health';
 
 const app = express();
 const port = process.env.GATEWAY_SERVICE_PORT || 3000;
@@ -26,6 +27,8 @@ setupProxyMiddlewares(app);
 app.get('/', (_req, res) => {
   res.send('Gateway Service Status: OK');
 });
+
+app.get('/health', setupHealthCheck('Gateway'));
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
