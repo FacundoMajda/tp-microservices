@@ -53,9 +53,7 @@ export class Logger {
   }
 
   static debug(message: string, data?: LogData) {
-    if (process.env.NODE_ENV === 'development') {
-      this.log('DEBUG', '🐛', message, data);
-    }
+    this.log('DEBUG', '🐛', message, data);
   }
 
   static request(method: string, url: string, ip: string, duration?: number) {
