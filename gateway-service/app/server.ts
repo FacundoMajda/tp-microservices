@@ -30,9 +30,9 @@ app.get('/', (_req, res) => {
 app.get('/health', async (_req, res) => {
   try {
     const services = [
-      { name: 'auth', url: 'http://auth:3000/health' },
-      { name: 'user', url: 'http://user:3000/health' },
-      { name: 'product', url: 'http://product:3000/health' },
+      { name: 'auth', url: 'http://auth:3001/health' },
+      { name: 'user', url: 'http://user:3002/health' },
+      { name: 'product', url: 'http://product:3003/health' },
     ];
 
     Logger.info('---------Starting health checks for all services---------');
