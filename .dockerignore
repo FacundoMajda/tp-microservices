@@ -1,7 +1,109 @@
+# ============================================
+# .dockerignore
+# Archivos y directorios excluidos del contexto de Docker
+# Reduce tamaño de build y mejora velocidad
+# ============================================
+
+# ==========================================
+# Control de versiones
+# ==========================================
+.git
+.gitignore
+.gitattributes
+.github
+
+# ==========================================
+# Dependencias
+# ==========================================
 node_modules
 npm-debug.log
-.git
-*Dockerfile*
-*docker-compose*
-.gitignore
+yarn-error.log
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# ==========================================
+# Archivos de desarrollo
+# ==========================================
+*.log
+*.pid
+*.seed
+*.pid.lock
+.DS_Store
+Thumbs.db
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==========================================
+# Archivos de build y caché
+# ==========================================
+dist
+build
+.cache
+.parcel-cache
+.next
+out
+.nuxt
+.vuepress/dist
+
+# ==========================================
+# Coverage y testing
+# ==========================================
+coverage
+.nyc_output
+*.coverage
+.jest
+.pytest_cache
+__pycache__
+*.py[cod]
+*$py.class
+
+# ==========================================
+# IDEs y editores
+# ==========================================
 .vscode
+.idea
+*.swp
+*.swo
+*~
+.project
+.settings
+.classpath
+
+# ==========================================
+# Docker
+# ==========================================
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# ==========================================
+# Documentación
+# ==========================================
+README.md
+README
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+docs/
+*.md
+
+# ==========================================
+# CI/CD
+# ==========================================
+.gitlab-ci.yml
+.travis.yml
+.circleci
+Jenkinsfile
+azure-pipelines.yml
+
+# ==========================================
+# Archivos temporales
+# ==========================================
+tmp
+temp
+*.tmp
+.temp

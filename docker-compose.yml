@@ -1,168 +1,218 @@
 services:
   # Gateway service
   gateway:
-    image: node:20.4.0
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    image: tp-microservices/gateway:latest
     container_name: example-gateway
     restart: unless-stopped
-    command: npm run start:dev
-    working_dir: /app
     networks:
       - example-network
     ports:
       - 3000:3000
-    volumes:
-      - ./gateway-service:/app
-    env_file:
-      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - AUTH_SERVICE_URL=http://auth:3000
+      - USER_SERVICE_URL=http://user:3000
+      - PRODUCT_SERVICE_URL=http://product:3000
+      - ORDER_SERVICE_URL=http://order:3000
+      - PAYMENT_SERVICE_URL=http://payment:3000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
   # Auth service
   auth:
-    image: node:20.4.0
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    image: tp-microservices/auth:latest
     container_name: example-auth
     restart: unless-stopped
-    command: npm run start:dev
-    working_dir: /app
     networks:
       - example-network
-    ports:
-      - 3001:3000
-    volumes:
-      - ./auth-service:/app
-    env_file:
-      - .env
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
     depends_on:
-      - db
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
+      db:
+        condition: service_healthy
 
   # User service
   user:
-    image: node:20.4.0
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    image: tp-microservices/user:latest
     container_name: example-user
     restart: unless-stopped
-    command: npm run start:dev
-    working_dir: /app
     networks:
       - example-network
-    ports:
-      - 3002:3000
-    volumes:
-      - ./user-service:/app
-    env_file:
-      - .env
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - db
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
+      db:
+        condition: service_healthy
 
   # Product service
   product:
-    image: node:20.4.0
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    image: tp-microservices/product:latest
     container_name: example-product
     restart: unless-stopped
-    command: npm run start:dev
-    working_dir: /app
     networks:
       - example-network
-    ports:
-      - 3003:3000
-    volumes:
-      - ./product-service:/app
-    env_file:
-      - .env
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - db
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
+      db:
+        condition: service_healthy
 
   # Order service
   order:
-    image: node:20.4.0
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    image: tp-microservices/order:latest
     container_name: example-order
     restart: unless-stopped
-    command: npm run start:dev
-    working_dir: /app
     networks:
       - example-network
-    ports:
-      - 3004:3000
-    volumes:
-      - ./order-service:/app
-    env_file:
-      - .env
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - PRODUCT_SERVICE_URL=http://product:3000
+      - PAYMENT_SERVICE_URL=http://payment:3000
     depends_on:
-      - db
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
+      db:
+        condition: service_healthy
 
   # Payment service
   payment:
-    image: node:20.4.0
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    image: tp-microservices/payment:latest
     container_name: example-payment
     restart: unless-stopped
-    command: npm run start:dev
-    working_dir: /app
+    networks:
+      - example-network
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Client (Frontend)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: tp-microservices/client:latest
+    container_name: example-client
+    restart: unless-stopped
     networks:
       - example-network
     ports:
-      - 3005:3000
-    volumes:
-      - ./payment-service:/app
-    env_file:
-      - .env
+      - 80:80
     depends_on:
-      - db
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
+      - gateway
 
   # Database service
   db:
     image: mysql:8.3.0
-    container_name: example-user-db
+    container_name: user-db
     restart: unless-stopped
     networks:
       - example-network
     ports:
-      - 3307:3306
+      - 3308:3306
     environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 30s
-      retries: 3
-      start_period: 5s
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u${MYSQL_USER}",
+          "-p${MYSQL_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     volumes:
       - db-volume:/var/lib/mysql
-      - ./:/docker-entrypoint-initdb.d:ro
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
 
 networks:
   example-network:
