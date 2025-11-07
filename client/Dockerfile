@@ -16,7 +16,8 @@ COPY package*.json ./
 
 # Instalar todas las dependencias (incluidas devDependencies)
 # Vite y las herramientas de build están en devDependencies
-RUN npm install --no-audit --no-fund
+# Usar --ignore-scripts para evitar problemas con patch-package
+RUN npm install --no-audit --no-fund --legacy-peer-deps --ignore-scripts
 
 # Copiar archivos de configuración
 COPY tsconfig.json ./
