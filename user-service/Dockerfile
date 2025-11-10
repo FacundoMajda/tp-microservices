@@ -10,26 +10,32 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Optimización de caché: copiar package.json primero
-COPY package*.json ./
+# Copy and build shared module first
+COPY shared /app/shared
+WORKDIR /app/shared
+RUN npm install --no-audit --no-fund && npm run build
 
-# Instalar todas las dependencias para compilar con reintentos
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm install --no-audit --no-fund --fetch-retries 5 || \
-    (sleep 10 && npm install --no-audit --no-fund --fetch-retries 5)
+# Now build user service
+WORKDIR /app/user-service
+
+# Optimización de caché: copiar package.json primero
+COPY user-service/package*.json ./
+
+# Link shared module
+RUN npm install --no-audit --no-fund
 
 # Copiar código fuente y configuración
-COPY tsconfig.json ./
-COPY app/ ./app/
-COPY config/ ./config/
-COPY controllers/ ./controllers/
-COPY interfaces/ ./interfaces/
-COPY middlewares/ ./middlewares/
-COPY models/ ./models/
-COPY repository/ ./repository/
-COPY routes/ ./routes/
-COPY services/ ./services/
-COPY utils/ ./utils/
+COPY user-service/tsconfig.json ./
+COPY user-service/app/ ./app/
+COPY user-service/config/ ./config/
+COPY user-service/controllers/ ./controllers/
+COPY user-service/interfaces/ ./interfaces/
+COPY user-service/middlewares/ ./middlewares/
+COPY user-service/models/ ./models/
+COPY user-service/repository/ ./repository/
+COPY user-service/routes/ ./routes/
+COPY user-service/services/ ./services/
+COPY user-service/utils/ ./utils/
 
 # Compilar TypeScript a JavaScript
 RUN npm run build
@@ -53,17 +59,21 @@ RUN addgroup -g 1001 -S nodejs && \
 WORKDIR /app
 
 # Copiar archivos de dependencias
-COPY package*.json ./
+COPY user-service/package*.json ./
 
-# Instalar solo dependencias de producción
-RUN npm install --omit=dev --no-audit --no-fund && \
-    npm cache clean --force
+# Copiar node_modules completo desde builder (incluye dependencies)
+COPY --from=builder /app/user-service/node_modules ./node_modules
+
+# Copiar módulo shared compilado directamente (no el symlink)
+RUN rm -rf ./node_modules/@tp-microservices/shared && mkdir -p ./node_modules/@tp-microservices/shared
+COPY --from=builder /app/shared/dist ./node_modules/@tp-microservices/shared/dist
+COPY --from=builder /app/shared/package.json ./node_modules/@tp-microservices/shared/
 
 # Copiar código compilado desde builder
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/user-service/dist ./dist
 
 # Copiar package.json con permisos correctos
-COPY --chown=nodejs:nodejs package.json ./
+COPY --chown=nodejs:nodejs user-service/package.json ./
 
 # Cambiar propiedad de archivos
 RUN chown -R nodejs:nodejs /app

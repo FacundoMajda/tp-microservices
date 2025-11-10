@@ -1,5 +1,31 @@
 services:
-  # Gateway service
+  # ============================================
+  # MESSAGE BROKER - RabbitMQ
+  # ============================================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: example-rabbitmq
+    restart: unless-stopped
+    networks:
+      - example-network
+    ports:
+      - 5672:5672 # AMQP protocol
+      - 15672:15672 # Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-admin}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-admin123}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  # ============================================
+  # GATEWAY SERVICE
+  # ============================================
   gateway:
     build:
       context: ./gateway-service
@@ -14,18 +40,14 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
       - AUTH_SERVICE_URL=http://auth:3000
-      - USER_SERVICE_URL=http://user:3000
-      - PRODUCT_SERVICE_URL=http://product:3000
+      - USER_SERVICE_URL=http://user:3002
+      - PRODUCT_SERVICE_URL=http://product:3003
       - ORDER_SERVICE_URL=http://order:3000
       - PAYMENT_SERVICE_URL=http://payment:3000
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
-      db:
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
@@ -34,7 +56,42 @@ services:
       retries: 3
       start_period: 40s
 
-  # Auth service
+  # ============================================
+  # AUTH SERVICE + DATABASE
+  # ============================================
+  auth-db:
+    image: mysql:8.3.0
+    container_name: auth-db
+    restart: unless-stopped
+    networks:
+      - auth-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${AUTH_DB_ROOT_PASSWORD:-root123}
+      - MYSQL_DATABASE=${AUTH_DB_NAME:-auth_db}
+      - MYSQL_USER=${AUTH_DB_USER:-auth_user}
+      - MYSQL_PASSWORD=${AUTH_DB_PASSWORD:-auth_pass123}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u${AUTH_DB_USER:-auth_user}",
+          "-p${AUTH_DB_PASSWORD:-auth_pass123}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - auth-db-data:/var/lib/mysql
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
   auth:
     build:
       context: ./auth-service
@@ -44,100 +101,232 @@ services:
     restart: unless-stopped
     networks:
       - example-network
+      - auth-network
     expose:
       - "3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=db
+      - DB_HOST=auth-db
       - DB_PORT=3306
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${AUTH_DB_NAME:-auth_db}
+      - DB_USER=${AUTH_DB_USER:-auth_user}
+      - DB_PASSWORD=${AUTH_DB_PASSWORD:-auth_pass123}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
-      db:
+      auth-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
-  # User service
+  # ============================================
+  # USER SERVICE + DATABASE
+  # ============================================
+  user-db:
+    image: mysql:8.3.0
+    container_name: user-db
+    restart: unless-stopped
+    networks:
+      - user-network
+    ports:
+      - 3308:3306 # External access for admin
+    environment:
+      - MYSQL_ROOT_PASSWORD=${USER_DB_ROOT_PASSWORD:-root123}
+      - MYSQL_DATABASE=${USER_DB_NAME:-user_db}
+      - MYSQL_USER=${USER_DB_USER:-user_user}
+      - MYSQL_PASSWORD=${USER_DB_PASSWORD:-user_pass123}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u${USER_DB_USER:-user_user}",
+          "-p${USER_DB_PASSWORD:-user_pass123}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - user-db-data:/var/lib/mysql
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
   user:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./user-service/Dockerfile
     image: tp-microservices/user:latest
     container_name: example-user
     restart: unless-stopped
     networks:
       - example-network
+      - user-network
     expose:
-      - "3000"
+      - "3002"
+    ports:
+      - "3002:3002"
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - DB_HOST=db
+      - PORT=3002
+      - DB_HOST=user-db
       - DB_PORT=3306
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=${USER_DB_NAME:-user_db}
+      - DB_USER=${USER_DB_USER:-user_user}
+      - DB_PASSWORD=${USER_DB_PASSWORD:-user_pass123}
       - JWT_SECRET=${JWT_SECRET}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
-      db:
+      user-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
-  # Product service
+  # ============================================
+  # PRODUCT SERVICE + DATABASE (MongoDB)
+  # ============================================
+  product-db:
+    image: mongo:7-jammy
+    container_name: product-db
+    restart: unless-stopped
+    networks:
+      - product-network
+    ports:
+      - 27017:27017 # External access for admin
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${PRODUCT_DB_USER:-product_user}
+      - MONGO_INITDB_ROOT_PASSWORD=${PRODUCT_DB_PASSWORD:-product_pass123}
+      - MONGO_INITDB_DATABASE=${PRODUCT_DB_NAME:-product_db}
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - product-db-data:/data/db
+
   product:
     build:
-      context: ./product-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./product-service/Dockerfile
     image: tp-microservices/product:latest
     container_name: example-product
     restart: unless-stopped
     networks:
       - example-network
+      - product-network
     expose:
-      - "3000"
+      - "3003"
+    ports:
+      - "3003:3003"
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - PORT=3003
+      - MONGODB_URI=mongodb://${PRODUCT_DB_USER:-product_user}:${PRODUCT_DB_PASSWORD:-product_pass123}@product-db:27017/${PRODUCT_DB_NAME:-product_db}?authSource=admin
       - JWT_SECRET=${JWT_SECRET}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
-      db:
+      product-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
-  # Order service
+  # ============================================
+  # ORDER SERVICE + DATABASE (PostgreSQL)
+  # ============================================
+  order-db:
+    image: postgres:15-alpine
+    container_name: order-db
+    restart: unless-stopped
+    networks:
+      - order-network
+    ports:
+      - 5432:5432 # External access for admin
+    environment:
+      - POSTGRES_DB=${ORDER_DB_NAME:-order_db}
+      - POSTGRES_USER=${ORDER_DB_USER:-order_user}
+      - POSTGRES_PASSWORD=${ORDER_DB_PASSWORD:-order_pass123}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${ORDER_DB_USER:-order_user} -d ${ORDER_DB_NAME:-order_db}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+
   order:
     build:
-      context: ./order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./order-service/Dockerfile
     image: tp-microservices/order:latest
     container_name: example-order
     restart: unless-stopped
     networks:
       - example-network
+      - order-network
     expose:
       - "3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_HOST=order-db
+      - DB_PORT=5432
+      - DB_NAME=${ORDER_DB_NAME:-order_db}
+      - DB_USER=${ORDER_DB_USER:-order_user}
+      - DB_PASSWORD=${ORDER_DB_PASSWORD:-order_pass123}
+      - DB_DIALECT=postgres
       - JWT_SECRET=${JWT_SECRET}
-      - PRODUCT_SERVICE_URL=http://product:3000
+      - PRODUCT_SERVICE_URL=http://product:3003
       - PAYMENT_SERVICE_URL=http://payment:3000
+      - USER_SERVICE_URL=http://user:3002
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
-      db:
+      order-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
-  # Payment service
+  # ============================================
+  # PAYMENT SERVICE + DATABASE (PostgreSQL)
+  # ============================================
+  payment-db:
+    image: postgres:15-alpine
+    container_name: payment-db
+    restart: unless-stopped
+    networks:
+      - payment-network
+    ports:
+      - 5433:5432 # External access for admin (different port to avoid conflict)
+    environment:
+      - POSTGRES_DB=${PAYMENT_DB_NAME:-payment_db}
+      - POSTGRES_USER=${PAYMENT_DB_USER:-payment_user}
+      - POSTGRES_PASSWORD=${PAYMENT_DB_PASSWORD:-payment_pass123}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${PAYMENT_DB_USER:-payment_user} -d ${PAYMENT_DB_NAME:-payment_db}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+
   payment:
     build:
       context: ./payment-service
@@ -147,22 +336,30 @@ services:
     restart: unless-stopped
     networks:
       - example-network
+      - payment-network
     expose:
       - "3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USER}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_HOST=payment-db
+      - DB_PORT=5432
+      - DB_NAME=${PAYMENT_DB_NAME:-payment_db}
+      - DB_USER=${PAYMENT_DB_USER:-payment_user}
+      - DB_PASSWORD=${PAYMENT_DB_PASSWORD:-payment_pass123}
+      - DB_DIALECT=postgres
       - JWT_SECRET=${JWT_SECRET}
+      - ORDER_SERVICE_URL=http://order:3000
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
-      db:
+      payment-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
-  # Client (Frontend)
+  # ============================================
+  # CLIENT (Frontend)
+  # ============================================
   client:
     build:
       context: ./client
@@ -177,46 +374,36 @@ services:
     depends_on:
       - gateway
 
-  # Database service
-  db:
-    image: mysql:8.3.0
-    container_name: user-db
-    restart: unless-stopped
-    networks:
-      - example-network
-    ports:
-      - 3308:3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u${MYSQL_USER}",
-          "-p${MYSQL_PASSWORD}",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    volumes:
-      - db-volume:/var/lib/mysql
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
-    command:
-      - --default-authentication-plugin=mysql_native_password
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-
+# ============================================
+# NETWORKS
+# ============================================
 networks:
   example-network:
     driver: bridge
+  auth-network:
+    driver: bridge
+  user-network:
+    driver: bridge
+  product-network:
+    driver: bridge
+  order-network:
+    driver: bridge
+  payment-network:
+    driver: bridge
 
+# ============================================
+# VOLUMES
+# ============================================
 volumes:
-  db-volume: # Persist data for the database
+  rabbitmq-data:
+    driver: local
+  auth-db-data:
+    driver: local
+  user-db-data:
+    driver: local
+  product-db-data:
+    driver: local
+  order-db-data:
+    driver: local
+  payment-db-data:
+    driver: local

@@ -4,33 +4,45 @@
 # ============================================
 
 # ============================================
-# Etapa 1: Builder
+# Etapa 1: Builder - Compilación de TypeScript
 # ============================================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm install --no-audit --no-fund --fetch-retries 5 || \
-    (sleep 10 && npm install --no-audit --no-fund --fetch-retries 5)
+# Copy and build shared module first
+COPY shared /app/shared
+WORKDIR /app/shared
+RUN npm install --no-audit --no-fund && npm run build
 
-COPY tsconfig.json ./
-COPY app/ ./app/
-COPY config/ ./config/
-COPY controllers/ ./controllers/
-COPY interfaces/ ./interfaces/
-COPY middlewares/ ./middlewares/
-COPY models/ ./models/
-COPY repository/ ./repository/
-COPY routes/ ./routes/
-COPY services/ ./services/
-COPY utils/ ./utils/
+# Now build order service
+WORKDIR /app/order-service
 
+# Optimización de caché: copiar package.json primero
+COPY order-service/package*.json ./
+
+# Link shared module
+RUN npm install --no-audit --no-fund
+
+# Copiar código fuente y configuración
+COPY order-service/tsconfig.json ./
+COPY order-service/app/ ./app/
+COPY order-service/config/ ./config/
+COPY order-service/controllers/ ./controllers/
+COPY order-service/interfaces/ ./interfaces/
+COPY order-service/middlewares/ ./middlewares/
+COPY order-service/models/ ./models/
+COPY order-service/repository/ ./repository/
+COPY order-service/routes/ ./routes/
+COPY order-service/services/ ./services/
+COPY order-service/subscribers/ ./subscribers/
+COPY order-service/utils/ ./utils/
+
+# Compilar TypeScript a JavaScript
 RUN npm run build
 
 # ============================================
-# Etapa 2: Production
+# Etapa 2: Production - Imagen final
 # ============================================
 FROM node:20-alpine
 
@@ -38,22 +50,36 @@ LABEL maintainer="tu-email@ejemplo.com"
 LABEL service="order-service"
 LABEL version="1.0.0"
 
+# Instalar dumb-init para manejo correcto de señales
 RUN apk add --no-cache dumb-init
 
+# Crear usuario no-root
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --omit=dev --no-audit --no-fund && \
-    npm cache clean --force
+# Copiar archivos de dependencias
+COPY order-service/package*.json ./
 
-COPY --from=builder /app/dist ./dist
-COPY --chown=nodejs:nodejs package.json ./
+# Copiar node_modules completo desde builder (incluye dependencies)
+COPY --from=builder /app/order-service/node_modules ./node_modules
 
+# Copiar módulo shared compilado directamente (no el symlink)
+RUN rm -rf ./node_modules/@tp-microservices/shared && mkdir -p ./node_modules/@tp-microservices/shared
+COPY --from=builder /app/shared/dist ./node_modules/@tp-microservices/shared/dist
+COPY --from=builder /app/shared/package.json ./node_modules/@tp-microservices/shared/
+
+# Copiar código compilado desde builder
+COPY --from=builder /app/order-service/dist ./dist
+
+# Copiar package.json con permisos correctos
+COPY --chown=nodejs:nodejs order-service/package.json ./
+
+# Cambiar propiedad de archivos
 RUN chown -R nodejs:nodejs /app
 
+# Cambiar a usuario no-root
 USER nodejs
 
 EXPOSE 3000

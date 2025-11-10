@@ -10,20 +10,28 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copy and build shared module first
+COPY shared /app/shared
+WORKDIR /app/shared
+RUN npm install --no-audit --no-fund && npm run build
+
+# Now build product service
+WORKDIR /app/product-service
+
+COPY product-service/package*.json ./
 RUN npm install --no-audit --no-fund
 
-COPY tsconfig.json ./
-COPY app/ ./app/
-COPY config/ ./config/
-COPY controllers/ ./controllers/
-COPY interfaces/ ./interfaces/
-COPY middlewares/ ./middlewares/
-COPY models/ ./models/
-COPY repository/ ./repository/
-COPY routes/ ./routes/
-COPY services/ ./services/
-COPY utils/ ./utils/
+COPY product-service/tsconfig.json ./
+COPY product-service/app/ ./app/
+COPY product-service/config/ ./config/
+COPY product-service/controllers/ ./controllers/
+COPY product-service/interfaces/ ./interfaces/
+COPY product-service/middlewares/ ./middlewares/
+COPY product-service/models/ ./models/
+COPY product-service/repository/ ./repository/
+COPY product-service/routes/ ./routes/
+COPY product-service/services/ ./services/
+COPY product-service/utils/ ./utils/
 
 RUN npm run build
 
@@ -43,12 +51,18 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --omit=dev --no-audit --no-fund && \
-    npm cache clean --force
+COPY product-service/package*.json ./
 
-COPY --from=builder /app/dist ./dist
-COPY --chown=nodejs:nodejs package.json ./
+# Copiar node_modules completo desde builder
+COPY --from=builder /app/product-service/node_modules ./node_modules
+
+# Copiar módulo shared compilado directamente (no el symlink)
+RUN rm -rf ./node_modules/@tp-microservices/shared && mkdir -p ./node_modules/@tp-microservices/shared
+COPY --from=builder /app/shared/dist ./node_modules/@tp-microservices/shared/dist
+COPY --from=builder /app/shared/package.json ./node_modules/@tp-microservices/shared/
+
+COPY --from=builder /app/product-service/dist ./dist
+COPY --chown=nodejs:nodejs product-service/package.json ./
 
 RUN chown -R nodejs:nodejs /app
 
