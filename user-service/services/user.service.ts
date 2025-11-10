@@ -1,9 +1,11 @@
 import { UserRepository } from '../repository/user.repository';
 import { User } from '../models/user.model';
 import { encryptSync } from '../utils/bcrypt';
+import { getEventBus } from '@tp-microservices/shared';
 
 export class UserService {
   private userRepository: UserRepository;
+  private eventBus = getEventBus();
 
   constructor(userRepository: UserRepository) {
     this.userRepository = userRepository;
@@ -34,6 +36,22 @@ export class UserService {
       password: hashedPassword,
       role: userData.role || 'user',
     });
+
+    // Publish user.created event
+    try {
+      await this.eventBus.publish(
+        'user.created',
+        {
+          userId: newUser.id,
+          name: `${newUser.firstName} ${newUser.lastName}`,
+          email: newUser.email,
+        },
+        'user-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish user.created event:', error);
+    }
+
     return newUser;
   }
 
@@ -54,11 +72,40 @@ export class UserService {
       dataToUpdate.password = encryptSync(userData.password);
     }
     const updatedUser = await this.userRepository.updateById(id, dataToUpdate);
+
+    // Publish user.updated event
+    try {
+      await this.eventBus.publish(
+        'user.updated',
+        {
+          userId: updatedUser.id,
+          name: `${updatedUser.firstName} ${updatedUser.lastName}`,
+          email: updatedUser.email,
+        },
+        'user-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish user.updated event:', error);
+    }
+
     return updatedUser;
   }
 
   async deleteUser(id: number): Promise<void> {
     await this.userRepository.deleteById(id);
+
+    // Publish user.deleted event
+    try {
+      await this.eventBus.publish(
+        'user.deleted',
+        {
+          userId: id,
+        },
+        'user-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish user.deleted event:', error);
+    }
   }
 
   async updatePreferences(id: number, preferences: Record<string, any>): Promise<User> {

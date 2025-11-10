@@ -1,19 +1,21 @@
 import { ProductRepository } from '../repository/product.repository';
-import { Product } from '../models/product.model';
+import { IProduct } from '../models/product.model';
+import { getEventBus } from '@tp-microservices/shared';
 
 export class ProductService {
   private productRepository: ProductRepository;
+  private eventBus = getEventBus();
 
   constructor(productRepository: ProductRepository) {
     this.productRepository = productRepository;
   }
 
-  async getAllProducts(): Promise<Product[]> {
+  async getAllProducts(): Promise<IProduct[]> {
     const products = await this.productRepository.findWithExclusions({}, []);
     return products;
   }
 
-  async getProductById(id: number): Promise<Product | null> {
+  async getProductById(id: string): Promise<IProduct | null> {
     const product = await this.productRepository.findById(id);
     return product;
   }
@@ -27,14 +29,31 @@ export class ProductService {
       category: string;
     },
     user: any,
-  ): Promise<Product> {
+  ): Promise<IProduct> {
     const data = { ...productData, userId: user.id };
     const newProduct = await this.productRepository.create(data);
+
+    // Publish product.created event
+    try {
+      await this.eventBus.publish(
+        'product.created',
+        {
+          productId: (newProduct as any)._id.toString(),
+          name: newProduct.name,
+          price: newProduct.price,
+          stock: newProduct.stock,
+        },
+        'product-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish product.created event:', error);
+    }
+
     return newProduct;
   }
 
   async updateProduct(
-    id: number,
+    id: string,
     productData: {
       name?: string;
       description?: string;
@@ -42,16 +61,46 @@ export class ProductService {
       stock?: number;
       category?: string;
     },
-  ): Promise<Product> {
+  ): Promise<IProduct> {
     const updatedProduct = await this.productRepository.updateById(id, productData);
+
+    // Publish product.updated event
+    try {
+      await this.eventBus.publish(
+        'product.updated',
+        {
+          productId: (updatedProduct as any)._id.toString(),
+          name: updatedProduct.name,
+          price: updatedProduct.price,
+          stock: updatedProduct.stock,
+        },
+        'product-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish product.updated event:', error);
+    }
+
     return updatedProduct;
   }
 
-  async deleteProduct(id: number): Promise<void> {
+  async deleteProduct(id: string): Promise<void> {
     await this.productRepository.deleteById(id);
+
+    // Publish product.deleted event (opcional)
+    try {
+      await this.eventBus.publish(
+        'product.deleted',
+        {
+          productId: id,
+        },
+        'product-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish product.deleted event:', error);
+    }
   }
 
-  async getProductsByCategory(category: string): Promise<Product[]> {
+  async getProductsByCategory(category: string): Promise<IProduct[]> {
     const products = await this.productRepository.findByCategory(category);
     return products;
   }

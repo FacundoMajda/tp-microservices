@@ -11,8 +11,9 @@ export const setupProxyMiddlewares = (app: Application): void => {
   app.use(
     '/auth',
     createProxyMiddleware({
-      target: `${process.env.AUTH_SERVICE_URL || 'http://localhost'}:${process.env.AUTH_SERVICE_PORT || '3001'}`,
+      target: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
       changeOrigin: true,
+      pathRewrite: { '^/auth': '' },
       ejectPlugins: true,
       plugins: [debugProxyErrorsPlugin, loggerPlugin, errorResponsePlugin, proxyEventsPlugin],
     }),
@@ -21,8 +22,9 @@ export const setupProxyMiddlewares = (app: Application): void => {
   app.use(
     '/users',
     createProxyMiddleware({
-      target: `${process.env.USER_SERVICE_URL || 'http://localhost'}:${process.env.USER_SERVICE_PORT || '3002'}`,
+      target: process.env.USER_SERVICE_URL || 'http://localhost:3002',
       changeOrigin: true,
+      pathRewrite: { '^/users': '' },
       ejectPlugins: true,
       plugins: [debugProxyErrorsPlugin, loggerPlugin, errorResponsePlugin, proxyEventsPlugin],
     }),
@@ -31,8 +33,9 @@ export const setupProxyMiddlewares = (app: Application): void => {
   app.use(
     '/products',
     createProxyMiddleware({
-      target: `${process.env.PRODUCT_SERVICE_URL || 'http://localhost'}:${process.env.PRODUCT_SERVICE_PORT || '3003'}`,
+      target: process.env.PRODUCT_SERVICE_URL || 'http://localhost:3003',
       changeOrigin: true,
+      pathRewrite: { '^/products': '' },
       ejectPlugins: true,
       plugins: [debugProxyErrorsPlugin, loggerPlugin, errorResponsePlugin, proxyEventsPlugin],
     }),
@@ -41,8 +44,9 @@ export const setupProxyMiddlewares = (app: Application): void => {
   app.use(
     '/orders',
     createProxyMiddleware({
-      target: `${process.env.ORDER_SERVICE_URL || 'http://localhost'}:${process.env.ORDER_SERVICE_PORT || '3004'}`,
+      target: process.env.ORDER_SERVICE_URL || 'http://localhost:3004',
       changeOrigin: true,
+      pathRewrite: { '^/orders': '' },
       ejectPlugins: true,
       plugins: [debugProxyErrorsPlugin, loggerPlugin, errorResponsePlugin, proxyEventsPlugin],
     }),
@@ -51,8 +55,9 @@ export const setupProxyMiddlewares = (app: Application): void => {
   app.use(
     '/payments',
     createProxyMiddleware({
-      target: `${process.env.PAYMENT_SERVICE_URL || 'http://localhost'}:${process.env.PAYMENT_SERVICE_PORT || '3005'}`,
+      target: process.env.PAYMENT_SERVICE_URL || 'http://localhost:3005',
       changeOrigin: true,
+      pathRewrite: { '^/payments': '' },
       ejectPlugins: true,
       plugins: [debugProxyErrorsPlugin, loggerPlugin, errorResponsePlugin, proxyEventsPlugin],
     }),

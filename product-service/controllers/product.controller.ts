@@ -20,7 +20,7 @@ export class ProductController {
   static async getProductById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const product = await productService.getProductById(parseInt(id));
+      const product = await productService.getProductById(id); // MongoDB uses string IDs
       if (!product) {
         res.status(404).json({ success: false, message: 'Producto no encontrado' });
         return;
@@ -58,7 +58,8 @@ export class ProductController {
     try {
       const { id } = req.params;
       const { name, description, price, stock, category } = req.body;
-      const updatedProduct = await productService.updateProduct(Number(id), {
+      const updatedProduct = await productService.updateProduct(id, {
+        // MongoDB uses string IDs
         name,
         description,
         price,
@@ -76,7 +77,7 @@ export class ProductController {
   static async deleteProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      await productService.deleteProduct(parseInt(id));
+      await productService.deleteProduct(id); // MongoDB uses string IDs
       res.json({ success: true, message: 'Producto eliminado exitosamente' });
       return;
     } catch (error) {
