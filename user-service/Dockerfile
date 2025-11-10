@@ -13,8 +13,10 @@ WORKDIR /app
 # Optimización de caché: copiar package.json primero
 COPY package*.json ./
 
-# Instalar todas las dependencias para compilar
-RUN npm install --no-audit --no-fund
+# Instalar todas las dependencias para compilar con reintentos
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm install --no-audit --no-fund --fetch-retries 5 || \
+    (sleep 10 && npm install --no-audit --no-fund --fetch-retries 5)
 
 # Copiar código fuente y configuración
 COPY tsconfig.json ./

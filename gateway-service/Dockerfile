@@ -11,7 +11,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --no-audit --no-fund
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm install --no-audit --no-fund --fetch-retries 5 || \
+    (sleep 10 && npm install --no-audit --no-fund --fetch-retries 5)
 
 COPY tsconfig.json ./
 COPY app/ ./app/

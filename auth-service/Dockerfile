@@ -18,10 +18,11 @@ WORKDIR /app
 # Esto optimiza la caché de Docker: si package.json no cambia, esta capa se reutiliza
 COPY package*.json ./
 
-# Instalamos TODAS las dependencias (incluidas devDependencies)
-# Necesarias para compilar TypeScript con tsc
-# --no-audit y --no-fund reducen el tiempo de instalación
-RUN npm install --no-audit --no-fund
+# Instalamos TODAS las dependencias con reintentos automáticos
+# Configuramos npm para mayor estabilidad y agregamos reintentos
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm install --no-audit --no-fund --fetch-retries 5 || \
+    (sleep 10 && npm install --no-audit --no-fund --fetch-retries 5)
 
 # Copiamos el código fuente y archivos de configuración
 # Se hace DESPUÉS de instalar dependencias para aprovechar la caché
