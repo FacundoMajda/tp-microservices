@@ -24,11 +24,11 @@ app.get('/health', async (req, res) => {
   const startTime = Date.now();
   try {
     const services = [
-      { name: 'auth', url: 'http://auth:3000/health' },
+      { name: 'auth', url: 'http://auth:3001/health' },
       { name: 'user', url: 'http://user:3002/health' },
       { name: 'product', url: 'http://product:3003/health' },
-      { name: 'order', url: 'http://order:3000/health' },
-      { name: 'payment', url: 'http://payment:3000/health' },
+      { name: 'order', url: 'http://order:3004/health' },
+      { name: 'payment', url: 'http://payment:3005/health' },
     ];
 
     Logger.info('Starting health checks for all services');

@@ -35,6 +35,7 @@ COPY order-service/models/ ./models/
 COPY order-service/repository/ ./repository/
 COPY order-service/routes/ ./routes/
 COPY order-service/services/ ./services/
+COPY order-service/seeders/ ./seeders/
 COPY order-service/subscribers/ ./subscribers/
 COPY order-service/utils/ ./utils/
 

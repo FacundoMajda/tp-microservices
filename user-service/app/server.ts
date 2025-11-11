@@ -6,6 +6,7 @@ import 'dotenv/config';
 import { initializeDatabase, initializeModels } from '../config';
 import { Logger } from '../utils/logger';
 import { loggingMiddleware, notFoundMiddleware, errorMiddleware } from '../middlewares';
+import { UserSeeder } from '../seeders/user.seeder';
 import { setupHealthCheck } from '../utils/health';
 import userRoutes from '../routes/user.routes';
 import { getEventBus } from '@tp-microservices/shared';
@@ -27,6 +28,9 @@ async function initialize() {
     initializeModels();
     Logger.dbConnection('success');
     console.log('✅ User Service database synchronized');
+
+    // Seed initial data
+    await UserSeeder.seed();
   } catch (error) {
     Logger.dbConnection('error', error);
   }

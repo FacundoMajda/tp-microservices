@@ -35,6 +35,7 @@ COPY user-service/models/ ./models/
 COPY user-service/repository/ ./repository/
 COPY user-service/routes/ ./routes/
 COPY user-service/services/ ./services/
+COPY user-service/seeders/ ./seeders/
 COPY user-service/utils/ ./utils/
 
 # Compilar TypeScript a JavaScript

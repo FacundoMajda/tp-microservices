@@ -40,11 +40,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - AUTH_SERVICE_URL=http://auth:3000
+      - AUTH_SERVICE_URL=http://auth:3001
       - USER_SERVICE_URL=http://user:3002
       - PRODUCT_SERVICE_URL=http://product:3003
-      - ORDER_SERVICE_URL=http://order:3000
-      - PAYMENT_SERVICE_URL=http://payment:3000
+      - ORDER_SERVICE_URL=http://order:3004
+      - PAYMENT_SERVICE_URL=http://payment:3005
       - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
       rabbitmq:
@@ -106,7 +106,7 @@ services:
       - "3000"
     environment:
       - NODE_ENV=production
-      - AUTH_SERVICE_PORT=3000
+      - PORT=3001
       - DB_HOST=auth-db
       - DB_PORT=3306
       - DB_NAME=${AUTH_DB_NAME:-auth_db}
@@ -278,10 +278,10 @@ services:
       - example-network
       - order-network
     expose:
-      - "3000"
+      - "3004"
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=3004
       - DB_HOST=order-db
       - DB_PORT=5432
       - DB_NAME=${ORDER_DB_NAME:-order_db}
@@ -290,7 +290,7 @@ services:
       - DB_DIALECT=postgres
       - JWT_SECRET=${JWT_SECRET}
       - PRODUCT_SERVICE_URL=http://product:3003
-      - PAYMENT_SERVICE_URL=http://payment:3000
+      - PAYMENT_SERVICE_URL=http://payment:3005
       - USER_SERVICE_URL=http://user:3002
       - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
@@ -338,10 +338,10 @@ services:
       - example-network
       - payment-network
     expose:
-      - "3000"
+      - "3005"
     environment:
       - NODE_ENV=production
-      - PAYMENT_SERVICE_PORT=3000
+      - PORT=3005
       - DB_HOST=payment-db
       - DB_PORT=5432
       - DB_NAME=${PAYMENT_DB_NAME:-payment_db}
@@ -349,7 +349,7 @@ services:
       - DB_PASSWORD=${PAYMENT_DB_PASSWORD:-payment_pass123}
       - DB_DIALECT=postgres
       - JWT_SECRET=${JWT_SECRET}
-      - ORDER_SERVICE_URL=http://order:3000
+      - ORDER_SERVICE_URL=http://order:3004
       - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-admin123}@rabbitmq:5672
     depends_on:
       payment-db:

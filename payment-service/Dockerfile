@@ -33,6 +33,7 @@ COPY payment-service/models/ ./models/
 COPY payment-service/repository/ ./repository/
 COPY payment-service/routes/ ./routes/
 COPY payment-service/services/ ./services/
+COPY payment-service/seeders/ ./seeders/
 COPY payment-service/subscribers/ ./subscribers/
 COPY payment-service/utils/ ./utils/
 

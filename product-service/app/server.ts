@@ -9,6 +9,7 @@ import { setupHealthCheck } from '../utils/health';
 import productRoutes from '../routes/product.routes';
 import { getEventBus } from '@tp-microservices/shared';
 import { OrderSubscriber } from '../subscribers/order.subscriber';
+import { ProductSeeder } from '../seeders/product.seeder';
 import { ProductRepository } from '../repository/product.repository';
 import { ProductService } from '../services/product.service';
 
@@ -31,6 +32,9 @@ async function initialize() {
     initializeDatabase();
     initializeModels();
     console.log('Product Service DB initialized');
+
+    // Seed initial data
+    await ProductSeeder.seed();
   } catch (error) {
     console.log('Product Service DB init failed', error);
   }

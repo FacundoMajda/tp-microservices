@@ -9,6 +9,7 @@ import { setupHealthCheck } from '../utils/health';
 import paymentRoutes from '../routes/payment.routes';
 import { getEventBus } from '@tp-microservices/shared';
 import { OrderSubscriber } from '../subscribers/order.subscriber';
+import { PaymentSeeder } from '../seeders/payment.seeder';
 import { PaymentRepository } from '../repository/payment.repository';
 import { PaymentService } from '../services/payment.service';
 
@@ -31,6 +32,9 @@ async function initialize() {
     initializeDatabase();
     initializeModels();
     console.log('Payment Service DB initialized');
+
+    // Seed initial data
+    await PaymentSeeder.seed();
   } catch (error) {
     console.log('Payment Service DB init failed', error);
   }

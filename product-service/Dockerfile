@@ -19,7 +19,7 @@ RUN npm install --no-audit --no-fund && npm run build
 WORKDIR /app/product-service
 
 COPY product-service/package*.json ./
-RUN npm install --no-audit --no-fund
+RUN npm ci
 
 COPY product-service/tsconfig.json ./
 COPY product-service/app/ ./app/
@@ -31,6 +31,7 @@ COPY product-service/models/ ./models/
 COPY product-service/repository/ ./repository/
 COPY product-service/routes/ ./routes/
 COPY product-service/services/ ./services/
+COPY product-service/seeders/ ./seeders/
 COPY product-service/subscribers/ ./subscribers/
 COPY product-service/utils/ ./utils/
 

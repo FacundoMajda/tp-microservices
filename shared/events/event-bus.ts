@@ -1,6 +1,3 @@
-// ============================================
-// Event Bus Implementation with RabbitMQ
-// ============================================
 import * as amqp from "amqplib";
 import { v4 as uuidv4 } from "uuid";
 import { DomainEvent } from "./types";
@@ -13,6 +10,7 @@ export class EventBus {
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 10;
   private isReconnecting = false;
+  private connectionPromise: Promise<void> | null = null;
 
   constructor(rabbitmqUrl?: string) {
     this.rabbitmqUrl =
@@ -25,6 +23,15 @@ export class EventBus {
    * Connect to RabbitMQ and setup exchange
    */
   async connect(): Promise<void> {
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
+
+    this.connectionPromise = this._connect();
+    return this.connectionPromise;
+  }
+
+  private async _connect(): Promise<void> {
     try {
       this.connection = (await amqp.connect(
         this.rabbitmqUrl
@@ -55,6 +62,34 @@ export class EventBus {
     } catch (error) {
       console.error("❌ Failed to connect to RabbitMQ:", error);
       this.handleDisconnect();
+      throw error;
+    }
+  }
+
+  /**
+   * Wait for connection to be established
+   */
+  async waitForConnection(timeoutMs: number = 30000): Promise<void> {
+    const startTime = Date.now();
+
+    while (!this.channel) {
+      if (Date.now() - startTime > timeoutMs) {
+        throw new Error(
+          `Timeout waiting for RabbitMQ connection (${timeoutMs}ms)`
+        );
+      }
+
+      // Try to connect if not already connecting
+      if (!this.connectionPromise) {
+        try {
+          await this.connect();
+        } catch (error) {
+          console.warn("Connection attempt failed, retrying...");
+        }
+      }
+
+      // Wait a bit before checking again
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
@@ -138,24 +173,35 @@ export class EventBus {
     handler: (event: T) => Promise<void>,
     queueName?: string
   ): Promise<void> {
+    // Wait for connection if not connected
     if (!this.channel) {
-      console.error("❌ EventBus not connected. Cannot subscribe to events.");
-      return;
+      console.log(
+        `⏳ Waiting for EventBus connection to subscribe to ${eventPattern}...`
+      );
+      try {
+        await this.waitForConnection();
+      } catch (error) {
+        console.error(
+          `❌ Failed to establish connection for subscription to ${eventPattern}:`,
+          error
+        );
+        return;
+      }
     }
 
     try {
       // Create queue (if not provided, create an exclusive queue)
       const queue = queueName || "";
-      const { queue: createdQueue } = await this.channel.assertQueue(queue, {
+      const { queue: createdQueue } = await this.channel!.assertQueue(queue, {
         durable: true,
         exclusive: !queueName, // Exclusive if no queue name provided
       });
 
       // Bind queue to exchange with pattern
-      await this.channel.bindQueue(createdQueue, this.exchange, eventPattern);
+      await this.channel!.bindQueue(createdQueue, this.exchange, eventPattern);
 
       // Consume messages
-      await this.channel.consume(
+      await this.channel!.consume(
         createdQueue,
         async (msg: amqp.ConsumeMessage | null) => {
           if (!msg) return;

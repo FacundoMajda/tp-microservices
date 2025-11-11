@@ -6,8 +6,9 @@ import helmet from 'helmet';
 import { initializeDatabase, initializeModels } from '../config';
 import { errorMiddleware, loggingMiddleware, notFoundMiddleware } from '../middlewares';
 import authRoutes from '../routes/auth.routes';
-import { setupHealthCheck } from '../utils/health';
+import { UserSeeder } from '../seeders/user.seeder';
 import { Logger } from '../utils/logger';
+import { setupHealthCheck } from '../utils/health';
 import { getEventBus } from '@tp-microservices/shared';
 
 const app = express();
@@ -26,6 +27,9 @@ async function initialize() {
     initializeDatabase();
     initializeModels();
     Logger.dbConnection('success');
+
+    // Seed initial data
+    await UserSeeder.seed();
   } catch (error) {
     Logger.dbConnection('error', error);
   }

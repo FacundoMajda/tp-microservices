@@ -9,6 +9,7 @@ import { setupHealthCheck } from '../utils/health';
 import orderRoutes from '../routes/order.routes';
 import { getEventBus } from '@tp-microservices/shared';
 import { UserSubscriber, ProductSubscriber, PaymentSubscriber } from '../subscribers';
+import { OrderSeeder } from '../seeders/order.seeder';
 import { OrderRepository } from '../repository/order.repository';
 import { OrderService } from '../services/order.service';
 
@@ -43,6 +44,9 @@ const paymentSubscriber = new PaymentSubscriber(eventBus, orderService);
     // Conectar a RabbitMQ
     await eventBus.connect();
     console.log('✅ EventBus connected to RabbitMQ');
+
+    // Seed initial data
+    await OrderSeeder.seed();
 
     // Inicializar subscribers
     await userSubscriber.initialize();

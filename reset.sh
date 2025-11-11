@@ -1,5 +1,4 @@
 #!/bin/bash
-
 echo "Starting reset process..."
 services=("auth-service" "gateway-service" "user-service" "product-service" "order-service" "payment-service" "client")
 for service in "${services[@]}"; do

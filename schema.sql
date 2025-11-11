@@ -1,2 +1,0 @@
-GRANT ALL ON *.* TO 'app'@'%';
-CREATE DATABASE IF NOT EXISTS app;
