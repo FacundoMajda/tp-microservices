@@ -31,6 +31,7 @@ COPY product-service/models/ ./models/
 COPY product-service/repository/ ./repository/
 COPY product-service/routes/ ./routes/
 COPY product-service/services/ ./services/
+COPY product-service/subscribers/ ./subscribers/
 COPY product-service/utils/ ./utils/
 
 RUN npm run build

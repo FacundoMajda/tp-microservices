@@ -8,10 +8,16 @@ import { loggingMiddleware, notFoundMiddleware, errorMiddleware } from '../middl
 import { setupHealthCheck } from '../utils/health';
 import productRoutes from '../routes/product.routes';
 import { getEventBus } from '@tp-microservices/shared';
+import { OrderSubscriber } from '../subscribers/order.subscriber';
+import { ProductRepository } from '../repository/product.repository';
+import { ProductService } from '../services/product.service';
 
 const app = express();
 const port = process.env.PRODUCT_SERVICE_PORT || 3003;
 const eventBus = getEventBus();
+const productRepository = new ProductRepository();
+const productService = new ProductService(productRepository);
+const orderSubscriber = new OrderSubscriber(eventBus, productService);
 
 app.use(loggingMiddleware);
 app.use(cors());
@@ -31,6 +37,7 @@ async function initialize() {
 
   try {
     await eventBus.connect();
+    await orderSubscriber.initialize();
     console.log('✅ Product Service connected to EventBus');
   } catch (error) {
     console.error('❌ Failed to connect to EventBus:', error);

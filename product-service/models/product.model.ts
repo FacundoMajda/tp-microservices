@@ -1,6 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
 
-// Product Interface for TypeScript
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -13,7 +12,6 @@ export interface IProduct extends Document {
   updatedAt: Date;
 }
 
-// Product Schema for MongoDB
 const productSchema = new Schema<IProduct>(
   {
     name: {
@@ -54,32 +52,23 @@ const productSchema = new Schema<IProduct>(
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt automatically
+    timestamps: true,
     collection: 'products',
   },
 );
 
-// Indexes for better query performance
-productSchema.index({ name: 'text', description: 'text' }); // Text search
-productSchema.index({ category: 1, price: 1 }); // Category + price queries
-productSchema.index({ deletedAt: 1 }); // Soft delete queries
-
-// Virtual for checking if product is deleted
 productSchema.virtual('isDeleted').get(function (this: IProduct) {
   return this.deletedAt !== null;
 });
 
-// Method to soft delete
 productSchema.methods.softDelete = function (this: IProduct) {
   this.deletedAt = new Date();
   return this.save();
 };
 
-// Method to restore
 productSchema.methods.restore = function (this: IProduct) {
   this.deletedAt = null;
   return this.save();
 };
 
-// Export the model
 export const Product = model<IProduct>('Product', productSchema);

@@ -1,8 +1,10 @@
 import { OrderRepository } from '../repository/order.repository';
 import { Order } from '../models/order.model';
+import { getEventBus } from '@tp-microservices/shared';
 
 export class OrderService {
   private orderRepository: OrderRepository;
+  private eventBus = getEventBus();
 
   constructor(orderRepository: OrderRepository) {
     this.orderRepository = orderRepository;
@@ -21,7 +23,7 @@ export class OrderService {
   async createOrder(orderData: {
     userId: number;
     items: Array<{
-      productId: number;
+      productId: string;
       quantity: number;
       price: number;
     }>;
@@ -29,6 +31,23 @@ export class OrderService {
     const total = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const data = { ...orderData, total, status: 'pending' as const };
     const newOrder = await this.orderRepository.create(data);
+
+    // Publish order.created event
+    try {
+      await this.eventBus.publish(
+        'order.created',
+        {
+          orderId: newOrder.id,
+          userId: newOrder.userId,
+          total: newOrder.total,
+          items: newOrder.items,
+        },
+        'order-service',
+      );
+    } catch (error) {
+      console.error('Failed to publish order.created event:', error);
+    }
+
     return newOrder;
   }
 
@@ -39,6 +58,42 @@ export class OrderService {
     },
   ): Promise<Order> {
     const updatedOrder = await this.orderRepository.updateById(id, orderData);
+
+    if (orderData.status) {
+      try {
+        await this.eventBus.publish(
+          'order.status.changed',
+          {
+            orderId: updatedOrder.id,
+            oldStatus: 'pending',
+            newStatus: updatedOrder.status,
+          },
+          'order-service',
+        );
+
+        // If order is cancelled, release stock
+        if (updatedOrder.status === 'cancelled') {
+          for (const item of updatedOrder.items) {
+            try {
+              await this.eventBus.publish(
+                'product.stock.released',
+                {
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  orderId: updatedOrder.id,
+                },
+                'order-service',
+              );
+            } catch (error) {
+              console.error('Failed to publish stock.released event:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to publish order.status.changed event:', error);
+      }
+    }
+
     return updatedOrder;
   }
 

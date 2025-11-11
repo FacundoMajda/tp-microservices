@@ -2,7 +2,6 @@ import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
-import { initializeDatabase } from '../config';
 import { errorMiddleware, loggingMiddleware, notFoundMiddleware, setupProxyMiddlewares } from '../middlewares';
 import { Logger } from '../utils/logger';
 
@@ -15,12 +14,6 @@ app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-try {
-  initializeDatabase();
-  Logger.dbConnection('success');
-} catch (error) {
-  Logger.dbConnection('error', error);
-}
 setupProxyMiddlewares(app);
 
 app.get('/', (_req, res) => {
@@ -31,11 +24,11 @@ app.get('/health', async (req, res) => {
   const startTime = Date.now();
   try {
     const services = [
-      { name: 'auth', url: 'http://auth:3001/health' },
+      { name: 'auth', url: 'http://auth:3000/health' },
       { name: 'user', url: 'http://user:3002/health' },
       { name: 'product', url: 'http://product:3003/health' },
-      { name: 'order', url: 'http://order:3004/health' },
-      { name: 'payment', url: 'http://payment:3005/health' },
+      { name: 'order', url: 'http://order:3000/health' },
+      { name: 'payment', url: 'http://payment:3000/health' },
     ];
 
     Logger.info('Starting health checks for all services');

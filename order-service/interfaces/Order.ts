@@ -4,7 +4,7 @@ export interface OrderAttributes {
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   total: number;
   items: Array<{
-    productId: number;
+    productId: string;
     quantity: number;
     price: number;
   }>;

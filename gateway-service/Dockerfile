@@ -17,7 +17,6 @@ RUN npm config set registry https://registry.npmjs.org/ && \
 
 COPY tsconfig.json ./
 COPY app/ ./app/
-COPY config/ ./config/
 COPY middlewares/ ./middlewares/
 COPY utils/ ./utils/
 

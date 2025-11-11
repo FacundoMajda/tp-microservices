@@ -8,7 +8,9 @@ import { loggingMiddleware, notFoundMiddleware, errorMiddleware } from '../middl
 import { setupHealthCheck } from '../utils/health';
 import orderRoutes from '../routes/order.routes';
 import { getEventBus } from '@tp-microservices/shared';
-import { UserSubscriber, ProductSubscriber } from '../subscribers';
+import { UserSubscriber, ProductSubscriber, PaymentSubscriber } from '../subscribers';
+import { OrderRepository } from '../repository/order.repository';
+import { OrderService } from '../services/order.service';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -30,8 +32,11 @@ try {
 
 // Conectar EventBus y inicializar subscribers
 const eventBus = getEventBus();
+const orderRepository = new OrderRepository();
+const orderService = new OrderService(orderRepository);
 const userSubscriber = new UserSubscriber(eventBus);
 const productSubscriber = new ProductSubscriber(eventBus);
+const paymentSubscriber = new PaymentSubscriber(eventBus, orderService);
 
 (async () => {
   try {
@@ -42,6 +47,7 @@ const productSubscriber = new ProductSubscriber(eventBus);
     // Inicializar subscribers
     await userSubscriber.initialize();
     await productSubscriber.initialize();
+    await paymentSubscriber.initialize();
     console.log('✅ Event subscribers initialized');
     console.log('✅ Order Service connected to EventBus');
   } catch (error) {

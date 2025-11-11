@@ -16,7 +16,15 @@ WORKDIR /app
 
 # Copiamos SOLO los archivos de dependencias primero
 # Esto optimiza la caché de Docker: si package.json no cambia, esta capa se reutiliza
-COPY package*.json ./
+COPY auth-service/package*.json ./auth-service/
+
+# Copy and build shared module first
+COPY shared /app/shared
+WORKDIR /app/shared
+RUN npm install --no-audit --no-fund && npm run build
+
+# Now build auth service
+WORKDIR /app/auth-service
 
 # Instalamos TODAS las dependencias con reintentos automáticos
 # Configuramos npm para mayor estabilidad y agregamos reintentos
@@ -26,11 +34,16 @@ RUN npm config set registry https://registry.npmjs.org/ && \
 
 # Copiamos el código fuente y archivos de configuración
 # Se hace DESPUÉS de instalar dependencias para aprovechar la caché
-COPY tsconfig.json ./
-COPY app/ ./app/
-COPY config/ ./config/
-COPY middlewares/ ./middlewares/
-COPY utils/ ./utils/
+COPY auth-service/tsconfig.json ./
+COPY auth-service/app/ ./app/
+COPY auth-service/config/ ./config/
+COPY auth-service/controllers/ ./controllers/
+COPY auth-service/interfaces/ ./interfaces/
+COPY auth-service/middlewares/ ./middlewares/
+COPY auth-service/models/ ./models/
+COPY auth-service/routes/ ./routes/
+COPY auth-service/services/ ./services/
+COPY auth-service/utils/ ./utils/
 
 # Compilamos TypeScript a JavaScript
 # El output se genera en el directorio /dist según tsconfig.json
@@ -59,22 +72,24 @@ RUN addgroup -g 1001 -S nodejs && \
 # Establecemos el directorio de trabajo
 WORKDIR /app
 
-# Copiamos SOLO los archivos de dependencias
-COPY package*.json ./
+# Copiamos archivos de dependencias
+COPY auth-service/package*.json ./
 
-# Instalamos SOLO las dependencias de producción
-# --omit=dev excluye devDependencies, reduciendo el tamaño de la imagen
-# --no-audit y --no-fund aceleran la instalación
-RUN npm install --omit=dev --no-audit --no-fund && \
-    npm cache clean --force
+# Copiar node_modules completo desde builder (incluye dependencies)
+COPY --from=builder /app/auth-service/node_modules ./node_modules
+
+# Copiar módulo shared compilado directamente (no el symlink)
+RUN rm -rf ./node_modules/@tp-microservices/shared && mkdir -p ./node_modules/@tp-microservices/shared
+COPY --from=builder /app/shared/dist ./node_modules/@tp-microservices/shared/dist
+COPY --from=builder /app/shared/package.json ./node_modules/@tp-microservices/shared/
 
 # Copiamos el código compilado desde la etapa builder
 # Solo traemos el JavaScript compilado, no el código TypeScript original
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/auth-service/dist ./dist
 
 # Copiamos archivos adicionales necesarios en runtime
 # El archivo .env no debe incluirse aquí (se pasa como variable de entorno)
-COPY --chown=nodejs:nodejs package.json ./
+# COPY --chown=nodejs:nodejs package.json ./  # Already copied above
 
 # Cambiamos la propiedad de todos los archivos al usuario nodejs
 # Esto asegura que el usuario tenga permisos correctos

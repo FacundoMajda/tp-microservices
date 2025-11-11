@@ -37,20 +37,8 @@ export class UserService {
       role: userData.role || 'user',
     });
 
-    // Publish user.created event
-    try {
-      await this.eventBus.publish(
-        'user.created',
-        {
-          userId: newUser.id,
-          name: `${newUser.firstName} ${newUser.lastName}`,
-          email: newUser.email,
-        },
-        'user-service',
-      );
-    } catch (error) {
-      console.error('Failed to publish user.created event:', error);
-    }
+    // Note: user.created event is published by auth-service during registration
+    // This service handles user management after registration
 
     return newUser;
   }

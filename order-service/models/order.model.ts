@@ -7,7 +7,7 @@ export class Order extends Model<OrderAttributes, OrderCreateAttributes> {
   declare status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   declare total: number;
   declare items: Array<{
-    productId: number;
+    productId: string;
     quantity: number;
     price: number;
   }>;

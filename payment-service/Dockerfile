@@ -10,22 +10,31 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copy and build shared module first
+COPY shared /app/shared
+WORKDIR /app/shared
+RUN npm install --no-audit --no-fund && npm run build
+
+# Now build payment service
+WORKDIR /app/payment-service
+
+COPY payment-service/package*.json ./
 RUN npm config set registry https://registry.npmjs.org/ && \
     npm install --no-audit --no-fund --fetch-retries 5 || \
     (sleep 10 && npm install --no-audit --no-fund --fetch-retries 5)
 
-COPY tsconfig.json ./
-COPY app/ ./app/
-COPY config/ ./config/
-COPY controllers/ ./controllers/
-COPY interfaces/ ./interfaces/
-COPY middlewares/ ./middlewares/
-COPY models/ ./models/
-COPY repository/ ./repository/
-COPY routes/ ./routes/
-COPY services/ ./services/
-COPY utils/ ./utils/
+COPY payment-service/tsconfig.json ./
+COPY payment-service/app/ ./app/
+COPY payment-service/config/ ./config/
+COPY payment-service/controllers/ ./controllers/
+COPY payment-service/interfaces/ ./interfaces/
+COPY payment-service/middlewares/ ./middlewares/
+COPY payment-service/models/ ./models/
+COPY payment-service/repository/ ./repository/
+COPY payment-service/routes/ ./routes/
+COPY payment-service/services/ ./services/
+COPY payment-service/subscribers/ ./subscribers/
+COPY payment-service/utils/ ./utils/
 
 RUN npm run build
 
@@ -45,12 +54,18 @@ RUN addgroup -g 1001 -S nodejs && \
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --omit=dev --no-audit --no-fund && \
-    npm cache clean --force
+COPY payment-service/package*.json ./
 
-COPY --from=builder /app/dist ./dist
-COPY --chown=nodejs:nodejs package.json ./
+# Copiar node_modules completo desde builder (incluye dependencies)
+COPY --from=builder /app/payment-service/node_modules ./node_modules
+
+# Copiar módulo shared compilado directamente (no el symlink)
+RUN rm -rf ./node_modules/@tp-microservices/shared && mkdir -p ./node_modules/@tp-microservices/shared
+COPY --from=builder /app/shared/dist ./node_modules/@tp-microservices/shared/dist
+COPY --from=builder /app/shared/package.json ./node_modules/@tp-microservices/shared/
+
+COPY --from=builder /app/payment-service/dist ./dist
+# COPY --chown=nodejs:nodejs package.json ./  # Already copied above
 
 RUN chown -R nodejs:nodejs /app
 
