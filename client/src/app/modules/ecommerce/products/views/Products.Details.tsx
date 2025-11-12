@@ -26,7 +26,7 @@ const ProductsDetails: React.FC = () => {
         <div className="space-y-8">
           <DetailsHeader
             title={product.name}
-            category={product.category}
+            // category={product.category}
             tags={product.tags}
             sku={product.sku}
             brand={product.brand}
@@ -34,14 +34,14 @@ const ProductsDetails: React.FC = () => {
           />
 
           <div className="grid gap-4 xl:grid-cols-3">
-            <DetailsPreview thumbnail={product.thumbnail} name={product.name} />
-            <div className="space-y-4 xl:col-span-2">
+            <DetailsPreview thumbnail={product.thumbnail} name={product.name} isLoading={isLoading} />
+            <div className="space-y-7 xl:col-span-2">
               <DetailsSummary
                 price={product.price}
                 rating={product.rating || 0}
                 stock={product.stock}
+                category={product.category}
               />
-
               <DetailsInfo
                 description={product.description}
                 dimensions={product.dimensions}

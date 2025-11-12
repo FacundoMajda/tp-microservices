@@ -1,12 +1,10 @@
-import { Button } from "@/app/components/ui/button";
-import { Card, CardHeader } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Separator } from "@/app/components/ui/separator";
 import React from "react";
 
 const DetailsHeader: React.FC<{
   title: string;
-  category: string;
+  category?: string;
   tags?: string[];
   sku?: string;
   brand?: string;
@@ -23,12 +21,15 @@ const DetailsHeader: React.FC<{
                 orientation="vertical"
                 className="mx-2 inline-block h-6"
               />
-              <span className="italic text-muted-foreground">{brand}</span>
+              <span className="italic text-muted-foreground/45">{brand}</span>
             </>
           )}
         </h1>
+
+      </div>
+      <div className="flex items-center space-x-2">
         <div className="text-muted-foreground inline-flex flex-col gap-2 text-sm lg:flex-row lg:gap-4">
-          <p className="text-sm text-muted-foreground">Category: {category}</p>
+          {category && <p className="text-sm">Category: {category}</p>}
           {sku && <p className="text-sm text-muted-foreground">SKU: {sku}</p>}
         </div>
         {availabilityStatus && (
@@ -50,12 +51,9 @@ const DetailsHeader: React.FC<{
           </div>
         )}
       </div>
-      <div className="flex items-center space-x-2">
-        <Button>Soy un boton</Button>
-        <Button>Soy un boton</Button>
-      </div>
     </div>
   );
 };
 
 export { DetailsHeader };
+

@@ -8,6 +8,8 @@ const ContainerDemoPage = lazy(() => import("./ContainerDemoPage"));
 const ProductsPage = lazy(() => import("./ProductsPage"));
 const ProductsDetailsPage = lazy(() => import("./ProductsDetailsPage"));
 const ProductsLayout = lazy(() => import("./layouts/Products.Layout"));
+const OrdersPage = lazy(() => import("./OrdersPage"));
+const PaymentsPage = lazy(() => import("./PaymentsPage"));
 
 export {
   HomePage,
@@ -18,4 +20,6 @@ export {
   ProductsPage,
   ProductsDetailsPage,
   ProductsLayout,
+  OrdersPage,
+  PaymentsPage,
 };

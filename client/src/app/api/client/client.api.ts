@@ -6,6 +6,7 @@ import type {
 } from "axios";
 import axios, { AxiosError } from "axios";
 import { logoutAndRedirect } from "@/lib/authActions";
+import { useAuthStore } from "@/stores";
 import {
   API_SERVICES,
   type ApiError,
@@ -56,8 +57,8 @@ export class ClientAPI {
 
     client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // const token = useAuthStore.getState().accessToken;
-        // if (token) config.headers.Authorization = `Bearer ${token}`;
+        const token = useAuthStore.getState().accessToken;
+        if (token) config.headers.Authorization = `Bearer ${token}`;
         return config;
       },
       (error: AxiosError) => Promise.reject(this.apiError(error))

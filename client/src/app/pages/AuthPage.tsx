@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/app/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import LoginForm from "../modules/access-control/auth/LoginForm";
 import RegisterForm from "../modules/access-control/auth/RegisterForm";
+import { useLogin, useRegister } from "../modules/access-control/auth/hooks/useAuth";
 
 interface AuthPageProps {
     title?: string;
@@ -38,56 +39,56 @@ const AuthPage: React.FC<AuthPageProps> = ({
         navigate(`/${newTab}`, { replace: true });
     };
 
-    // const {
-    //   mutate: loginUser,
-    //   isPending: isLoginPending,
-    //   isError: isLoginError,
-    //   error: loginError,
-    // } = useLogin();
+    const {
+        mutate: loginUser,
+        isPending: isLoginPending,
+        isError: isLoginError,
+        error: loginError,
+    } = useLogin();
 
     const onLoginSubmit = (data: any) => {
         console.log("Login data:", data);
-        // loginUser(data, {
-        //   onSuccess: () => {
-        //     navigate("/dashboard");
-        //   },
-        // });
+        loginUser(data, {
+            onSuccess: () => {
+                navigate("/dashboard");
+            },
+        });
     };
 
-    // const {
-    //   mutate: registerUser,
-    //   isPending: isRegisterPending,
-    //   isError: isRegisterError,
-    //   error: registerError,
-    // } = useRegister();
+    const {
+        mutate: registerUser,
+        isPending: isRegisterPending,
+        isError: isRegisterError,
+        error: registerError,
+    } = useRegister();
 
     const onRegisterSubmit = (data: any) => {
         console.log("Register data:", data);
-        // const payload = {
-        //   userName: data.userName,
-        //   email: data.email,
-        //   password: data.password,
-        //   role: data.role,
-        // };
-        // registerUser(payload, {
-        //   onSuccess: () => {
-        //     loginUser(
-        //       { email: data.email, password: data.password },
-        //       {
-        //         onSuccess: () => {
-        //           navigate("/dashboard");
-        //         },
-        //         onError: (err) => {
-        //           console.error("Auto-login error:", err);
-        //           navigate("/login");
-        //         },
-        //       }
-        //     );
-        //   },
-        //   onError: (err) => {
-        //     console.error("Registration error:", err);
-        //   },
-        // });
+        const payload = {
+            userName: data.userName,
+            email: data.email,
+            password: data.password,
+            role: data.role,
+        };
+        registerUser(payload, {
+            onSuccess: () => {
+                loginUser(
+                    { email: data.email, password: data.password },
+                    {
+                        onSuccess: () => {
+                            navigate("/dashboard");
+                        },
+                        onError: (err) => {
+                            console.error("Auto-login error:", err);
+                            navigate("/login");
+                        },
+                    }
+                );
+            },
+            onError: (err) => {
+                console.error("Registration error:", err);
+            },
+        });
     };
 
     return (
@@ -117,17 +118,17 @@ const AuthPage: React.FC<AuthPageProps> = ({
                             <TabsContent value="login">
                                 <LoginForm
                                     onSubmit={onLoginSubmit}
-                                    isLoginPending={false}
-                                    isLoginError={false}
-                                    loginError={null}
+                                    isLoginPending={isLoginPending}
+                                    isLoginError={isLoginError}
+                                    loginError={loginError}
                                 />
                             </TabsContent>
 
                             <TabsContent value="register">
                                 <RegisterForm
                                     onSubmit={onRegisterSubmit}
-                                    isRegisterPending={false}
-                                    isRegisterError={false}
+                                    isRegisterPending={isRegisterPending}
+                                    isRegisterError={isRegisterError}
                                 />
                             </TabsContent>
                         </Tabs>

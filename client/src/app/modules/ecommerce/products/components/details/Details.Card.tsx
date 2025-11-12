@@ -3,7 +3,7 @@
 // stock: number
 
 import { Card } from "@/app/components/ui/card";
-import { DollarSign, PackageSearch, Star } from "lucide-react";
+import { DollarSign, ListTree, PackageSearch, Star } from "lucide-react";
 
 const calculateDiscountedPrice = (
   price: number,
@@ -17,7 +17,7 @@ const PriceCard: React.FC<{ price: number; discountPercentage: number }> = ({
   discountPercentage,
 }) => {
   return (
-    <Card className="hover:border-primary/30 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
+    <Card className="hover:border-primary/55 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
       <DollarSign />
       <div className="flex flex-col gap-1">
         <span className="text-muted-foreground text-sm">Precio</span>
@@ -43,7 +43,7 @@ const PriceCard: React.FC<{ price: number; discountPercentage: number }> = ({
 
 const RatingCard: React.FC<{ rating: number }> = ({ rating }) => {
   return (
-    <Card className="hover:border-primary/30 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
+    <Card className="hover:border-primary/55 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
       <Star />
       <div className="flex flex-col gap-1">
         <span className="text-muted-foreground text-sm">Valoración</span>
@@ -57,7 +57,7 @@ const RatingCard: React.FC<{ rating: number }> = ({ rating }) => {
 
 const StockCard: React.FC<{ stock: number }> = ({ stock }) => {
   return (
-    <Card className="hover:border-primary/30 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
+    <Card className="hover:border-primary/55 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
       <PackageSearch />
       <div className="flex flex-col gap-1">
         <span className="text-muted-foreground text-sm">Stock</span>
@@ -67,4 +67,16 @@ const StockCard: React.FC<{ stock: number }> = ({ stock }) => {
   );
 };
 
-export { PriceCard, RatingCard, StockCard };
+const CategoryCard: React.FC<{ category: string }> = ({ category }) => {
+  return (
+    <Card className="hover:border-primary/55 bg-muted grid auto-cols-max grid-flow-col gap-4 rounded-lg border p-4">
+      <ListTree />
+      <div className="flex flex-col gap-1">
+        <span className="text-muted-foreground text-sm">Categoría</span>
+        <span className="text-lg font-semibold">{category}</span>
+      </div>
+    </Card>
+  );
+};
+
+export { PriceCard, RatingCard, StockCard, CategoryCard };

@@ -12,11 +12,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 import { GenericFileUpload } from '../components/shared/GenericFileUpload'
 import { Activity, Users, FileText, TrendingUp, Settings } from 'lucide-react'
+import { ProductsRepository } from '../modules/ecommerce/products/api/repository'
 
 const FeaturePage = () => {
     const { setBreadcrumbs } = useBreadcrumbs()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+    const [productForm, setProductForm] = useState({
+        name: '',
+        description: '',
+        price: '',
+        stock: '',
+        category: ''
+    })
+
+    const { mutate: addProduct, isPending: isAddingProduct } = ProductsRepository.useAddProduct()
 
     useEffect(() => {
         setBreadcrumbs([{ label: 'Features' }])
@@ -50,22 +60,88 @@ const FeaturePage = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Nombre</Label>
-                            <Input id="name" placeholder="Ingresa tu nombre" />
+                            <Label htmlFor="name">Nombre del Producto</Label>
+                            <Input
+                                id="name"
+                                placeholder="Ingresa el nombre del producto"
+                                value={productForm.name}
+                                onChange={(e) => setProductForm(prev => ({ ...prev, name: e.target.value }))}
+                            />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="tu@email.com" />
+                            <Label htmlFor="description">Descripción</Label>
+                            <Textarea
+                                id="description"
+                                placeholder="Descripción del producto..."
+                                value={productForm.description}
+                                onChange={(e) => setProductForm(prev => ({ ...prev, description: e.target.value }))}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="price">Precio</Label>
+                                <Input
+                                    id="price"
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={productForm.price}
+                                    onChange={(e) => setProductForm(prev => ({ ...prev, price: e.target.value }))}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="stock">Stock</Label>
+                                <Input
+                                    id="stock"
+                                    type="number"
+                                    placeholder="0"
+                                    value={productForm.stock}
+                                    onChange={(e) => setProductForm(prev => ({ ...prev, stock: e.target.value }))}
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="message">Mensaje</Label>
-                            <Textarea id="message" placeholder="Tu mensaje aquí..." />
+                            <Label htmlFor="category">Categoría</Label>
+                            <Select value={productForm.category} onValueChange={(value) => setProductForm(prev => ({ ...prev, category: value }))}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona una categoría" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="electronics">Electrónicos</SelectItem>
+                                    <SelectItem value="fashion">Moda</SelectItem>
+                                    <SelectItem value="home">Hogar</SelectItem>
+                                    <SelectItem value="beauty">Belleza</SelectItem>
+                                    <SelectItem value="sports">Deportes</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <Switch id="notifications" />
-                            <Label htmlFor="notifications">Recibir notificaciones</Label>
-                        </div>
-                        <Button className="w-full">Enviar</Button>
+                        <Button
+                            className="w-full"
+                            disabled={isAddingProduct}
+                            onClick={() => {
+                                addProduct({
+                                    name: productForm.name,
+                                    description: productForm.description,
+                                    price: parseFloat(productForm.price),
+                                    stock: parseInt(productForm.stock),
+                                    category: productForm.category,
+                                    userId: 1, // Asumir userId, o obtener del store
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    deletedAt: null
+                                }, {
+                                    onSuccess: () => {
+                                        setProductForm({ name: '', description: '', price: '', stock: '', category: '' })
+                                        alert('Producto creado exitosamente')
+                                    },
+                                    onError: (error) => {
+                                        console.error('Error creando producto:', error)
+                                        alert('Error al crear producto')
+                                    }
+                                })
+                            }}
+                        >
+                            {isAddingProduct ? 'Creando...' : 'Crear Producto'}
+                        </Button>
                     </CardContent>
                 </Card>
 

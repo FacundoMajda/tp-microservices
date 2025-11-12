@@ -6,6 +6,8 @@ import {
   ProductsPage,
   ProductsDetailsPage,
   ProductsLayout,
+  OrdersPage,
+  PaymentsPage,
 } from "../pages";
 
 export interface IRoute {
@@ -55,6 +57,16 @@ const AppRoutes: IRoute[] = [
         requiresAuth: true,
       },
     ],
+  },
+  {
+    path: "/orders",
+    Component: OrdersPage,
+    requiresAuth: true,
+  },
+  {
+    path: "/payments",
+    Component: PaymentsPage,
+    requiresAuth: true,
   },
 ];
 

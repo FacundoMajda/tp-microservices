@@ -10,7 +10,7 @@ import {
     SidebarMenuItem,
 } from "@/app/components/ui/sidebar"
 import { useNavigateTo } from "@/hooks/use-navigate"
-import { Calendar, Home, Inbox, Box, Package } from "lucide-react"
+import { Calendar, Home, Inbox, Box, Package, ShoppingBag, CreditCard } from "lucide-react"
 
 const items = [
     {
@@ -37,6 +37,16 @@ const items = [
         title: "Products",
         url: "/products",
         icon: Package,
+    },
+    {
+        title: "Orders",
+        url: "/orders",
+        icon: ShoppingBag,
+    },
+    {
+        title: "Payments",
+        url: "/payments",
+        icon: CreditCard,
     },
 ]
 
