@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PRODUCTS_QUERY_KEYS } from "../../../api/query-keys";
-import { ProductsService } from "../../../api/services/products.service";
+import { PRODUCTS_QUERY_KEYS } from "../../../../api/query-keys";
+import { ProductsService } from "../../../../api/services/products.service";
 
-// Types based on server API with dummyjson extensions for compatibility
+// Types based on server API (with future thumbnail support)
 export interface Product {
   id: number;
   name: string;
@@ -16,7 +16,6 @@ export interface Product {
   deletedAt: Date | null;
   thumbnail?: string;
   images?: string[];
-  // Additional fields from dummyjson for richer UI
   discountPercentage?: number;
   rating?: number;
   brand?: string;

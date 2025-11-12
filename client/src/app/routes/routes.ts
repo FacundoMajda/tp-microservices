@@ -4,6 +4,8 @@ import {
   DashboardPage,
   ContainerDemoPage,
   ProductsPage,
+  ProductsDetailsPage,
+  ProductsLayout,
 } from "../pages";
 
 export interface IRoute {
@@ -39,8 +41,20 @@ const AppRoutes: IRoute[] = [
   },
   {
     path: "/products",
-    Component: ProductsPage,
+    Component: ProductsLayout,
     requiresAuth: true,
+    children: [
+      {
+        index: true,
+        Component: ProductsPage,
+        requiresAuth: true,
+      },
+      {
+        path: ":productId",
+        Component: ProductsDetailsPage,
+        requiresAuth: true,
+      },
+    ],
   },
 ];
 

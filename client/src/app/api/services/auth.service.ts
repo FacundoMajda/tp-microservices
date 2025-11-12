@@ -16,4 +16,7 @@ export class AuthService {
     clientAPI.http.post<IRegisterResponse>("/auth/register", data);
 
   static logoutUser = () => clientAPI.http.post("/auth/logout");
+
+  static verifyUser = (token: string) =>
+    clientAPI.http.post("/auth/verify", { token });
 }
