@@ -3,31 +3,31 @@
 echo "🚀 Starting all microservices with seeding..."
 
 echo "Starting auth-service..."
-cd auth-service && npm run dev &
+cd auth-service && npm run start:dev & cd ..
 AUTH_PID=$!
 
 echo "Starting user-service..."
-cd ../user-service && npm run dev &
+cd user-service && npm run start:dev & cd ..
 USER_PID=$!
 
 echo "Starting product-service..."
-cd ../product-service && npm run dev &
+cd product-service && npm run start:dev & cd ..
 PRODUCT_PID=$!
 
 echo "Starting order-service..."
-cd ../order-service && npm run dev &
+cd order-service && npm run start:dev & cd ..
 ORDER_PID=$!
 
 echo "Starting payment-service..."
-cd ../payment-service && npm run dev &
+cd payment-service && npm run start:dev & cd ..
 PAYMENT_PID=$!
 
 echo "Starting gateway-service..."
-cd ../gateway-service && npm run dev &
+cd gateway-service && npm run start:dev & cd ..
 GATEWAY_PID=$!
 
 echo "Starting client..."
-cd ../client && npm run dev &
+cd client && npm run dev & cd ..
 CLIENT_PID=$!
 
 echo "🎯 All services started with seeding enabled!"
