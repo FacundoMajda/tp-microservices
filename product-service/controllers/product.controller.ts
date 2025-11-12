@@ -35,14 +35,16 @@ export class ProductController {
 
   static async createProduct(req: Request, res: Response): Promise<void> {
     try {
-      const { name, description, price, stock, category } = req.body;
+      const { title, description, price, stock, category, brand, thumbnail } = req.body;
       const newProduct = await productService.createProduct(
         {
-          name,
+          title,
           description,
           price,
           stock,
           category,
+          brand,
+          thumbnail,
         },
         req.user as any,
       );
@@ -57,14 +59,16 @@ export class ProductController {
   static async updateProduct(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { name, description, price, stock, category } = req.body;
+      const { title, description, price, stock, category, brand, thumbnail } = req.body;
       const updatedProduct = await productService.updateProduct(id, {
         // MongoDB uses string IDs
-        name,
+        title,
         description,
         price,
         stock,
         category,
+        brand,
+        thumbnail,
       });
       res.json({ success: true, data: updatedProduct });
       return;

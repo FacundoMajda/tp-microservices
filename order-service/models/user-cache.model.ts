@@ -15,7 +15,7 @@ export class UserCache extends Model {
     UserCache.init(
       {
         id: {
-          type: DataTypes.UUID,
+          type: DataTypes.INTEGER,
           primaryKey: true,
           allowNull: false,
           comment: 'ID del usuario desde user-service',

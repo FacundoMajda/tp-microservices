@@ -11,6 +11,7 @@ export const useLogin = () => {
   return useMutation<AxiosResponse<ILoginResponse>, Error, ILogin>({
     mutationFn: AuthService.loginUser,
     onSuccess: (response) => {
+      console.log("user y token", response.data.user, response.data.token);
       useAuthStore.getState().login(response.data.user, response.data.token);
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.user() });
     },
@@ -20,7 +21,8 @@ export const useLogin = () => {
 export const useRegister = () => {
   return useMutation<AxiosResponse<IRegisterResponse>, Error, IRegister>({
     mutationFn: AuthService.registerUser,
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log(response);
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.user() });
     },
   });

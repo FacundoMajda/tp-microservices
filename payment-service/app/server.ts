@@ -29,8 +29,8 @@ app.use(express.json());
 // Initialize database and EventBus
 async function initialize() {
   try {
-    initializeDatabase();
     initializeModels();
+    await initializeDatabase();
     console.log('Payment Service DB initialized');
 
     // Seed initial data

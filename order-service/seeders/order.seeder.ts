@@ -1,3 +1,4 @@
+import { CreationAttributes } from '@sequelize/core';
 import { Order } from '../models/order.model';
 
 export class OrderSeeder {
@@ -13,43 +14,43 @@ export class OrderSeeder {
       console.log('Seeding orders...');
 
       // Create sample orders
-      const orders = [
-        {
-          userId: 2, // Regular user
-          status: 'delivered' as const,
-          total: 1299.98,
-          items: [
-            {
-              productId: '507f1f77bcf86cd799439011', // First product from dummyjson
-              quantity: 2,
-              price: 649.99,
-            },
-          ],
-        },
-        {
-          userId: 2, // Regular user
-          status: 'pending' as const,
-          total: 199.99,
-          items: [
-            {
-              productId: '507f1f77bcf86cd799439012', // Second product
-              quantity: 1,
-              price: 199.99,
-            },
-          ],
-        },
-        {
-          userId: 1, // Admin user
-          status: 'confirmed' as const,
-          total: 899.97,
-          items: [
-            {
-              productId: '507f1f77bcf86cd799439013', // Third product
-              quantity: 3,
-              price: 299.99,
-            },
-          ],
-        },
+      const orders: string | any[] | readonly CreationAttributes<Order>[] = [
+        // {
+        //   userId: 2, // Regular user
+        //   status: 'delivered' as const,
+        //   total: 1299.98,
+        //   items: [
+        //     {
+        //       productId: '507f1f77bcf86cd799439011', // First product from dummyjson
+        //       quantity: 2,
+        //       price: 649.99,
+        //     },
+        //   ],
+        // },
+        // {
+        //   userId: 2, // Regular user
+        //   status: 'pending' as const,
+        //   total: 199.99,
+        //   items: [
+        //     {
+        //       productId: '507f1f77bcf86cd799439012', // Second product
+        //       quantity: 1,
+        //       price: 199.99,
+        //     },
+        //   ],
+        // },
+        // {
+        //   userId: 1, // Admin user
+        //   status: 'confirmed' as const,
+        //   total: 899.97,
+        //   items: [
+        //     {
+        //       productId: '507f1f77bcf86cd799439013', // Third product
+        //       quantity: 3,
+        //       price: 299.99,
+        //     },
+        //   ],
+        // },
       ];
 
       await Order.bulkCreate(orders);

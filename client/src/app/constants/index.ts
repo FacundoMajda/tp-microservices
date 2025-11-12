@@ -23,4 +23,4 @@ export const TIME_UNITS = {
 };
 
 export const BASE_API_URL = "http://localhost:3000/";
-export const DUMMY_JSON_API_URL = "https://dummyjson.com/";
+export const DUMMY_JSON_API_URL = "http://localhost:3000/";

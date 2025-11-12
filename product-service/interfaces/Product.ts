@@ -1,16 +1,15 @@
-import type { PartialBy } from '@sequelize/utils';
-
 export interface ProductAttributes {
-  id: number;
-  name: string;
+  title: string;
   description: string;
   price: number;
   stock: number;
   category: string;
+  brand?: string;
+  thumbnail?: string;
   userId: number;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: Date | null;
+  deletedAt?: Date | null;
 }
 
-export type ProductCreateAttributes = PartialBy<ProductAttributes, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+export type ProductCreateAttributes = Omit<ProductAttributes, 'createdAt' | 'updatedAt'>;

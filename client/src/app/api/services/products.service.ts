@@ -83,27 +83,26 @@ export class ProductsService {
 
     let data = response.data;
 
-    // Handle backend response format
     if ("success" in data && "data" in data) {
       data = data.data as Product;
     }
 
-    // Handle dummyjson format
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      data = APIAdapter.adaptDummyProductToServer(data as any);
-    } else {
-      // Adapt MongoDB product (_id to id)
-      data = APIAdapter.adaptMongoProductToFrontend(data);
-    }
+    // // Handle dummyjson format
+    // if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
+    //   data = APIAdapter.adaptDummyProductToServer(data as any);
+    // } else {
+    //   // Adapt MongoDB product (_id to id)
+    //   data = APIAdapter.adaptMongoProductToFrontend(data);
+    // }
 
     return data as Product;
   }
 
-  // GET /products/categories
+  // GET /products/
   static async getCategories(): Promise<
     { slug: string; name: string; url: string }[]
   > {
-    const response = await clientAPI.http.get("/products/categories");
+    const response = await clientAPI.http.get("/products");
     return response.data;
   }
 
@@ -129,11 +128,6 @@ export class ProductsService {
       params,
     });
     const data = response.data;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      data.products = APIAdapter.adaptDummyProductsToServer(
-        data.products as any
-      );
-    }
     return data;
   }
 
@@ -151,29 +145,24 @@ export class ProductsService {
       params: { ...params, q: query },
     });
     const data = response.data;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      data.products = APIAdapter.adaptDummyProductsToServer(
-        data.products as any
-      );
-    }
     return data;
   }
 
   // POST /products/add
   static async addProduct(product: Omit<Product, "id">): Promise<Product> {
     let body = product;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      body = APIAdapter.adaptServerProductToDummy(product) as any;
-    }
+    // if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
+    //   body = APIAdapter.adaptServerProductToDummy(product) as any;
+    // }
     const response = await clientAPI.requestBuilder<Product>({
       method: "POST",
       service: API_SERVICES.PRODUCTS,
       body: body as Product,
     });
     let data = response.data;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      data = APIAdapter.adaptDummyProductToServer(data as any);
-    }
+    // if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
+    //   data = APIAdapter.adaptDummyProductToServer(data as any);
+    // }
     return data;
   }
 
@@ -183,9 +172,9 @@ export class ProductsService {
     product: Partial<Product>
   ): Promise<Product> {
     let body = product;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      body = APIAdapter.adaptServerProductToDummy(product) as any;
-    }
+    // if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
+    //   body = APIAdapter.adaptServerProductToDummy(product) as any;
+    // }
     const response = await clientAPI.requestBuilder<Product>({
       method: "PUT",
       service: API_SERVICES.PRODUCTS,
@@ -193,9 +182,9 @@ export class ProductsService {
       body: body as Product,
     });
     let data = response.data;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      data = APIAdapter.adaptDummyProductToServer(data as any);
-    }
+    // if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
+    //   data = APIAdapter.adaptDummyProductToServer(data as any);
+    // }
     return data;
   }
 

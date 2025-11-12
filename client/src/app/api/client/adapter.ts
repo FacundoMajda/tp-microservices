@@ -41,21 +41,21 @@ export interface DummyProduct {
 }
 
 export interface ServerProduct {
-  id: number;
-  name: string;
+  _id?: string;
+  title: string;
   description: string;
   price: number;
   stock: number;
   category: string;
+  brand?: string;
+  thumbnail?: string;
   userId: number;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: Date | null;
-  thumbnail?: string;
+  deletedAt?: Date | null;
   images?: string[];
   discountPercentage?: number;
   rating?: number;
-  brand?: string;
   tags?: string[];
   sku?: string;
   weight?: number;
@@ -88,21 +88,20 @@ export class APIAdapter {
   // Adapt a single dummy product to server format
   static adaptDummyProductToServer(dummyProduct: DummyProduct): ServerProduct {
     return {
-      id: dummyProduct.id,
-      name: dummyProduct.title, // Map title to name
+      title: dummyProduct.title, // Keep title as title
       description: dummyProduct.description,
       price: dummyProduct.price,
       stock: dummyProduct.stock,
       category: dummyProduct.category,
+      brand: dummyProduct.brand,
+      thumbnail: dummyProduct.thumbnail,
       userId: 0, // Default userId since dummyjson doesn't have it
       createdAt: new Date(), // Dummy date since not provided
       updatedAt: new Date(),
       deletedAt: null,
-      thumbnail: dummyProduct.thumbnail,
       images: dummyProduct.images,
       discountPercentage: dummyProduct.discountPercentage,
       rating: dummyProduct.rating,
-      brand: dummyProduct.brand,
       tags: dummyProduct.tags,
       sku: dummyProduct.sku,
       weight: dummyProduct.weight,
@@ -147,27 +146,27 @@ export class APIAdapter {
     serverProduct: Partial<ServerProduct>
   ): Partial<DummyProduct> {
     return {
-      id: serverProduct.id,
-      title: serverProduct.name, // Map name to title
-      description: serverProduct.description,
-      price: serverProduct.price,
-      stock: serverProduct.stock,
-      category: serverProduct.category,
-      thumbnail: serverProduct.thumbnail,
-      images: serverProduct.images,
-      discountPercentage: serverProduct.discountPercentage,
-      rating: serverProduct.rating,
-      brand: serverProduct.brand,
-      tags: serverProduct.tags,
-      sku: serverProduct.sku,
-      weight: serverProduct.weight,
+      id: 0, // Dummy ID
+      title: serverProduct.title || "", // Keep title as title
+      description: serverProduct.description || "",
+      price: serverProduct.price || 0,
+      stock: serverProduct.stock || 0,
+      category: serverProduct.category || "",
+      brand: serverProduct.brand || "",
+      thumbnail: serverProduct.thumbnail || "",
+      images: serverProduct.images || [],
+      discountPercentage: serverProduct.discountPercentage || 0,
+      rating: serverProduct.rating || 0,
+      tags: serverProduct.tags || [],
+      sku: serverProduct.sku || "",
+      weight: serverProduct.weight || 0,
       dimensions: serverProduct.dimensions,
-      warrantyInformation: serverProduct.warrantyInformation,
-      shippingInformation: serverProduct.shippingInformation,
-      availabilityStatus: serverProduct.availabilityStatus,
-      reviews: serverProduct.reviews,
-      returnPolicy: serverProduct.returnPolicy,
-      minimumOrderQuantity: serverProduct.minimumOrderQuantity,
+      warrantyInformation: serverProduct.warrantyInformation || "",
+      shippingInformation: serverProduct.shippingInformation || "",
+      availabilityStatus: serverProduct.availabilityStatus || "",
+      reviews: serverProduct.reviews || [],
+      returnPolicy: serverProduct.returnPolicy || "",
+      minimumOrderQuantity: serverProduct.minimumOrderQuantity || 1,
       meta: serverProduct.meta,
       // Other fields can be omitted or defaulted
     };

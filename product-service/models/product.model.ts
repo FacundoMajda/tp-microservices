@@ -1,11 +1,13 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface IProduct extends Document {
-  name: string;
+  title: string;
   description: string;
   price: number;
   stock: number;
   category: string;
+  brand?: string;
+  thumbnail?: string;
   userId: number;
   deletedAt?: Date | null;
   createdAt: Date;
@@ -14,9 +16,9 @@ export interface IProduct extends Document {
 
 const productSchema = new Schema<IProduct>(
   {
-    name: {
+    title: {
       type: String,
-      required: [true, 'Product name is required'],
+      required: [true, 'Product title is required'],
       trim: true,
       index: true,
     },
@@ -40,6 +42,16 @@ const productSchema = new Schema<IProduct>(
       required: [true, 'Product category is required'],
       trim: true,
       index: true,
+    },
+    brand: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    thumbnail: {
+      type: String,
+      required: false,
+      trim: true,
     },
     userId: {
       type: Number,

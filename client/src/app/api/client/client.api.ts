@@ -6,7 +6,6 @@ import type {
 } from "axios";
 import axios, { AxiosError } from "axios";
 import { logoutAndRedirect } from "@/lib/authActions";
-import { useAuthStore } from "@/stores";
 import {
   API_SERVICES,
   type ApiError,
@@ -57,8 +56,18 @@ export class ClientAPI {
 
     client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = useAuthStore.getState().accessToken;
-        if (token) config.headers.Authorization = `Bearer ${token}`;
+        // Get token from localStorage directly to ensure it's the latest
+        const authStorage = localStorage.getItem("auth-storage");
+        if (authStorage) {
+          try {
+            const { state } = JSON.parse(authStorage);
+            const token = state?.accessToken;
+            console.log("Token from localStorage:", token);
+            if (token) config.headers.Authorization = `Bearer ${token}`;
+          } catch (error) {
+            console.error("Error parsing auth storage:", error);
+          }
+        }
         return config;
       },
       (error: AxiosError) => Promise.reject(this.apiError(error))

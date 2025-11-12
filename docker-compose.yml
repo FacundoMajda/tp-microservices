@@ -291,6 +291,7 @@ services:
       - DB_PASSWORD=${ORDER_DB_PASSWORD:-order_pass123}
       - DB_DIALECT=postgres
       - JWT_SECRET=${JWT_SECRET}
+      - FORCE_SYNC=true
       - PRODUCT_SERVICE_URL=http://product:3003
       - PAYMENT_SERVICE_URL=http://payment:3005
       - USER_SERVICE_URL=http://user:3002

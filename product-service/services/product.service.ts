@@ -22,11 +22,13 @@ export class ProductService {
 
   async createProduct(
     productData: {
-      name: string;
+      title: string;
       description: string;
       price: number;
       stock: number;
       category: string;
+      brand?: string;
+      thumbnail?: string;
     },
     user: any,
   ): Promise<IProduct> {
@@ -39,7 +41,7 @@ export class ProductService {
         'product.created',
         {
           productId: (newProduct as any)._id.toString(),
-          name: newProduct.name,
+          name: newProduct.title,
           price: newProduct.price,
           stock: newProduct.stock,
         },
@@ -55,11 +57,13 @@ export class ProductService {
   async updateProduct(
     id: string,
     productData: {
-      name?: string;
+      title?: string;
       description?: string;
       price?: number;
       stock?: number;
       category?: string;
+      brand?: string;
+      thumbnail?: string;
     },
   ): Promise<IProduct> {
     const updatedProduct = await this.productRepository.updateById(id, productData);
@@ -70,7 +74,7 @@ export class ProductService {
         'product.updated',
         {
           productId: (updatedProduct as any)._id.toString(),
-          name: updatedProduct.name,
+          name: updatedProduct.title,
           price: updatedProduct.price,
           stock: updatedProduct.stock,
         },

@@ -41,11 +41,13 @@ export class ProductSeeder {
 
       // Transform and seed products
       const productsToSeed = data.products.map((product: DummyProduct) => ({
-        name: product.title,
+        title: product.title,
         description: product.description,
         price: product.price,
-        stock: product.stock || Math.floor(Math.random() * 100) + 10, // Random stock if not provided
+        stock: product.stock || Math.floor(Math.random() * 100) + 10,
         category: product.category,
+        brand: product.brand,
+        thumbnail: product.thumbnail,
         userId: 1, // Default to admin user
       }));
 

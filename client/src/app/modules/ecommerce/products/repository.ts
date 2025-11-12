@@ -4,22 +4,21 @@ import { ProductsService } from "../../../api/services/products.service";
 
 // Types based on server API with dummyjson extensions for compatibility
 export interface Product {
-  id: number;
-  name: string;
+  _id: string; // MongoDB ID
+  title: string;
   description: string;
   price: number;
   stock: number;
   category: string;
+  brand?: string;
+  thumbnail?: string;
   userId: number;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: Date | null;
-  thumbnail?: string;
-  images?: string[];
+  deletedAt?: Date | null;
   // Additional fields from dummyjson for richer UI
   discountPercentage?: number;
   rating?: number;
-  brand?: string;
   tags?: string[];
   sku?: string;
   weight?: number;

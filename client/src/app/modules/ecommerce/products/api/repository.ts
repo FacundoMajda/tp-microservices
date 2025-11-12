@@ -6,20 +6,20 @@ import { ProductsService } from "../../../../api/services/products.service";
 export interface Product {
   id?: number;
   _id?: string; // MongoDB ID
-  name: string;
+  title: string;
   description: string;
   price: number;
   stock: number;
   category: string;
+  brand?: string;
+  thumbnail?: string;
   userId: number;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   deletedAt?: Date | string | null;
-  thumbnail?: string;
   images?: string[];
   discountPercentage?: number;
   rating?: number;
-  brand?: string;
   tags?: string[];
   sku?: string;
   weight?: number;
@@ -87,10 +87,11 @@ export class ProductsRepository {
   };
 
   // Get all categories
-  static useCategories = () => {
+  static useCategories = (enabled: boolean = false) => {
     return useQuery({
       queryKey: PRODUCTS_QUERY_KEYS.categories(),
       queryFn: () => ProductsService.getCategories(),
+      enabled: enabled,
     });
   };
 
