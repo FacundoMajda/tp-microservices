@@ -11,10 +11,12 @@ const port = process.env.GATEWAY_SERVICE_PORT || 3000;
 app.use(loggingMiddleware);
 app.use(cors());
 app.use(helmet());
+
+// Setup proxy BEFORE body parsers to avoid consuming the request stream
+setupProxyMiddlewares(app);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-setupProxyMiddlewares(app);
 
 app.get('/', (_req, res) => {
   res.send('Gateway Service Status: OK');

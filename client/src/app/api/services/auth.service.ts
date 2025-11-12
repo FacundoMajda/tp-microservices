@@ -9,6 +9,7 @@ import type {
 import { clientAPI } from "../config";
 
 export class AuthService {
+  static client = clientAPI;
   static loginUser = (data: ILogin) =>
     clientAPI.http.post<ILoginResponse>("/auth/login", data);
 

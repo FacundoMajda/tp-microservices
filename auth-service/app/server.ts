@@ -12,7 +12,7 @@ import { setupHealthCheck } from '../utils/health';
 import { getEventBus } from '@tp-microservices/shared';
 
 const app = express();
-const port = process.env.AUTH_SERVICE_PORT || 3001;
+const port = process.env.PORT || process.env.AUTH_SERVICE_PORT || 3001;
 const eventBus = getEventBus();
 
 app.use(loggingMiddleware);

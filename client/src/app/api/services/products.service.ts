@@ -15,35 +15,88 @@ export class ProductsService {
     limit: number;
   }> {
     const response = await clientAPI.requestBuilder<{
-      products: Product[];
-      total: number;
-      skip: number;
-      limit: number;
+      success?: boolean;
+      data?: Product[];
+      products?: Product[];
+      total?: number;
+      skip?: number;
+      limit?: number;
     }>({
       method: "GET",
       service: API_SERVICES.PRODUCTS,
       params,
     });
-    const data = response.data;
-    if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
-      data.products = APIAdapter.adaptDummyProductsToServer(
-        data.products as any
+
+    // Handle different response formats
+    let data = response.data;
+
+    // If response has success/data structure (from our backend)
+    if ("success" in data && "data" in data) {
+      // Adapt MongoDB products (_id to id)
+      const adaptedProducts = APIAdapter.adaptMongoProductsToFrontend(
+        data.data || []
       );
+      return {
+        products: adaptedProducts,
+        total: adaptedProducts.length,
+        skip: 0,
+        limit: adaptedProducts.length,
+      };
     }
-    return data;
+
+    // If response has products array (from dummyjson)
+    if ("products" in data) {
+      if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
+        data.products = APIAdapter.adaptDummyProductsToServer(
+          data.products as any
+        );
+      }
+      return data as {
+        products: Product[];
+        total: number;
+        skip: number;
+        limit: number;
+      };
+    }
+
+    // Fallback
+    return {
+      products: [],
+      total: 0,
+      skip: 0,
+      limit: 0,
+    };
   }
   // GET /products/:id
   static async getProduct(id: string | number): Promise<Product> {
-    const response = await clientAPI.requestBuilder<Product>({
+    const response = await clientAPI.requestBuilder<
+      | {
+          success?: boolean;
+          data?: Product;
+        }
+      | Product
+    >({
       method: "GET",
       service: API_SERVICES.PRODUCTS,
       id,
     });
+
     let data = response.data;
+
+    // Handle backend response format
+    if ("success" in data && "data" in data) {
+      data = data.data as Product;
+    }
+
+    // Handle dummyjson format
     if (clientAPI.baseUrl === DUMMY_JSON_API_URL) {
       data = APIAdapter.adaptDummyProductToServer(data as any);
+    } else {
+      // Adapt MongoDB product (_id to id)
+      data = APIAdapter.adaptMongoProductToFrontend(data);
     }
-    return data;
+
+    return data as Product;
   }
 
   // GET /products/categories

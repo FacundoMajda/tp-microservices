@@ -40,27 +40,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             >
                 <FormField
                     control={registerForm.control}
-                    name="userName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="font-semibold text-foreground">
-                                Nombre de usuario
-                            </FormLabel>
-                            <FormControl>
-                                <Input
-                                    id="register-username"
-                                    type="text"
-                                    placeholder="usuario123"
-                                    className="bg-background"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={registerForm.control}
                     name="email"
                     render={({ field }) => (
                         <FormItem>

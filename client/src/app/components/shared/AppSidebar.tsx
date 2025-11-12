@@ -10,41 +10,41 @@ import {
     SidebarMenuItem,
 } from "@/app/components/ui/sidebar"
 import { useNavigateTo } from "@/hooks/use-navigate"
-import { Calendar, Home, Inbox, Box, Package, ShoppingBag, CreditCard } from "lucide-react"
+import { CreditCard, Package, ShoppingBag } from "lucide-react"
 
 const items = [
+    // {
+    //     title: "Home",
+    //     url: "/",
+    //     icon: Home,
+    // },
+    // {
+    //     title: "Dashboard",
+    //     url: "/dashboard",
+    //     icon: Inbox,
+    // },
+    // {
+    //     title: "Feature",
+    //     url: "/feature",
+    //     icon: Calendar,
+    // },
+    // {
+    //     title: "Container Demo",
+    //     url: "/container-demo",
+    //     icon: Box,
+    // },
     {
-        title: "Home",
-        url: "/",
-        icon: Home,
-    },
-    {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Inbox,
-    },
-    {
-        title: "Feature",
-        url: "/feature",
-        icon: Calendar,
-    },
-    {
-        title: "Container Demo",
-        url: "/container-demo",
-        icon: Box,
-    },
-    {
-        title: "Products",
+        title: "Productos",
         url: "/products",
         icon: Package,
     },
     {
-        title: "Orders",
+        title: "Pedidos",
         url: "/orders",
         icon: ShoppingBag,
     },
     {
-        title: "Payments",
+        title: "Pagos",
         url: "/payments",
         icon: CreditCard,
     },

@@ -11,9 +11,7 @@ export const useLogin = () => {
   return useMutation<AxiosResponse<ILoginResponse>, Error, ILogin>({
     mutationFn: AuthService.loginUser,
     onSuccess: (response) => {
-      useAuthStore
-        .getState()
-        .login(response.data.currentUser, response.data.accessToken);
+      useAuthStore.getState().login(response.data.user, response.data.token);
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.user() });
     },
   });

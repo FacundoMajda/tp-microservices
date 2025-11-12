@@ -9,8 +9,8 @@ export const loginSchema = z.object({
 });
 
 export const loginResponseSchema = z.object({
-  accessToken: z.string().optional(),
-  currentUser: userSchema,
+  token: z.string(),
+  user: userSchema,
 });
 
 export type ILogin = z.infer<typeof loginSchema>;

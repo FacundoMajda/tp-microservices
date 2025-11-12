@@ -124,6 +124,24 @@ export class APIAdapter {
     return dummyProducts.map(this.adaptDummyProductToServer);
   }
 
+  // Adapt MongoDB product (_id) to frontend format (id)
+  static adaptMongoProductToFrontend(mongoProduct: any): any {
+    if (!mongoProduct) return mongoProduct;
+
+    const { _id, ...rest } = mongoProduct;
+    return {
+      ...rest,
+      id: _id?.toString() || _id, // Convert ObjectId to string
+      _id, // Keep _id for compatibility
+    };
+  }
+
+  // Adapt array of MongoDB products
+  static adaptMongoProductsToFrontend(mongoProducts: any[]): any[] {
+    if (!Array.isArray(mongoProducts)) return mongoProducts;
+    return mongoProducts.map(this.adaptMongoProductToFrontend);
+  }
+
   // Adapt server product to dummy format (if needed for POST/PUT)
   static adaptServerProductToDummy(
     serverProduct: Partial<ServerProduct>

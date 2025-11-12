@@ -4,16 +4,17 @@ import { ProductsService } from "../../../../api/services/products.service";
 
 // Types based on server API (with future thumbnail support)
 export interface Product {
-  id: number;
+  id?: number;
+  _id?: string; // MongoDB ID
   name: string;
   description: string;
   price: number;
   stock: number;
   category: string;
   userId: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  deletedAt?: Date | string | null;
   thumbnail?: string;
   images?: string[];
   discountPercentage?: number;

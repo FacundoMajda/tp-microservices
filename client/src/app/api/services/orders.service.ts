@@ -13,26 +13,61 @@ export class OrdersService {
     limit: number;
   }> {
     const response = await clientAPI.requestBuilder<{
-      orders: Order[];
-      total: number;
-      skip: number;
-      limit: number;
+      success?: boolean;
+      data?: Order[];
+      orders?: Order[];
+      total?: number;
+      skip?: number;
+      limit?: number;
     }>({
       method: "GET",
       service: API_SERVICES.ORDERS,
       params,
     });
-    return response.data;
+
+    let data = response.data;
+
+    // Handle backend response format (success/data structure)
+    if ("success" in data && "data" in data) {
+      return {
+        orders: data.data || [],
+        total: data.data?.length || 0,
+        skip: 0,
+        limit: data.data?.length || 0,
+      };
+    }
+
+    // Handle standard format
+    return data as {
+      orders: Order[];
+      total: number;
+      skip: number;
+      limit: number;
+    };
   }
 
   // GET /orders/:id
   static async getOrder(id: string | number): Promise<Order> {
-    const response = await clientAPI.requestBuilder<Order>({
+    const response = await clientAPI.requestBuilder<
+      | {
+          success?: boolean;
+          data?: Order;
+        }
+      | Order
+    >({
       method: "GET",
       service: API_SERVICES.ORDERS,
       id,
     });
-    return response.data;
+
+    let data = response.data;
+
+    // Handle backend response format
+    if ("success" in data && "data" in data) {
+      return data.data as Order;
+    }
+
+    return data as Order;
   }
 
   // POST /orders

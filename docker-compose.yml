@@ -103,7 +103,9 @@ services:
       - example-network
       - auth-network
     expose:
-      - "3000"
+      - "3001"
+    ports:
+      - "3001:3001"
     environment:
       - NODE_ENV=production
       - PORT=3001

@@ -65,10 +65,9 @@ const AuthPage: React.FC<AuthPageProps> = ({
     const onRegisterSubmit = (data: any) => {
         console.log("Register data:", data);
         const payload = {
-            userName: data.userName,
             email: data.email,
             password: data.password,
-            role: data.role,
+            role: data.role || "user",
         };
         registerUser(payload, {
             onSuccess: () => {

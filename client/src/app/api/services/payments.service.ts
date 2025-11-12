@@ -13,26 +13,61 @@ export class PaymentsService {
     limit: number;
   }> {
     const response = await clientAPI.requestBuilder<{
-      payments: Payment[];
-      total: number;
-      skip: number;
-      limit: number;
+      success?: boolean;
+      data?: Payment[];
+      payments?: Payment[];
+      total?: number;
+      skip?: number;
+      limit?: number;
     }>({
       method: "GET",
       service: API_SERVICES.PAYMENTS,
       params,
     });
-    return response.data;
+
+    let data = response.data;
+
+    // Handle backend response format (success/data structure)
+    if ("success" in data && "data" in data) {
+      return {
+        payments: data.data || [],
+        total: data.data?.length || 0,
+        skip: 0,
+        limit: data.data?.length || 0,
+      };
+    }
+
+    // Handle standard format
+    return data as {
+      payments: Payment[];
+      total: number;
+      skip: number;
+      limit: number;
+    };
   }
 
   // GET /payments/:id
   static async getPayment(id: string | number): Promise<Payment> {
-    const response = await clientAPI.requestBuilder<Payment>({
+    const response = await clientAPI.requestBuilder<
+      | {
+          success?: boolean;
+          data?: Payment;
+        }
+      | Payment
+    >({
       method: "GET",
       service: API_SERVICES.PAYMENTS,
       id,
     });
-    return response.data;
+
+    let data = response.data;
+
+    // Handle backend response format
+    if ("success" in data && "data" in data) {
+      return data.data as Payment;
+    }
+
+    return data as Payment;
   }
 
   // POST /payments
